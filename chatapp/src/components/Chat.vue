@@ -37,10 +37,11 @@ const onExit = () => {
 
 // メモを画面上に表示する
 const onMemo = () => {
+  if (!chatContent.value.trim()) return//もし、入力欄が空文字やスペースだけだった場合は 何もしないで終了。
   // メモの内容を表示
-
+  chatList.unshift(`${userName.value}さんのメモ：「${chatContent.value}」`)
   // 入力欄を初期化
-
+  chatContent.value = ""
 }
 // #endregion
 
