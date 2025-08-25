@@ -24,7 +24,8 @@ onMounted(() => {
 const onPublish = () => {
   if (chatContent.value.trim() === "") return
   socket.emit("publishEvent", {
-    userName: String(userName), // 文字列に変換
+    type: 'message',
+    userName: userName.value, // 文字列に変換
     message: chatContent.value,
   })
   chatContent.value = ""
@@ -32,14 +33,21 @@ const onPublish = () => {
 
 // 退室メッセージをサーバに送信する
 const onExit = () => {
-  socket.emit("exitEvent", userName.value)
+  socket.emit("exitEvent", {
+    type: 'system',
+    userName: userName.value
+  })
 }
 
 // メモを画面上に表示する
 const onMemo = () => {
   if (!chatContent.value.trim()) return//もし、入力欄が空文字やスペースだけだった場合は 何もしないで終了。
   // メモの内容を表示
-  chatList.unshift(`${userName.value}さんのメモ：「${chatContent.value}」`)
+  chatList.unshift({
+    type: 'memo',
+    userName: userName.value + 'さんのメモ',
+    message: chatContent.value
+  })
   // 入力欄を初期化
   chatContent.value = ""
 }
@@ -48,17 +56,30 @@ const onMemo = () => {
 // #region socket event handler
 // サーバから受信した入室メッセージ画面上に表示する
 const onReceiveEnter = (data) => {
-  chatList.unshift(data+ "さんが入室しました")
+    chatList.unshift({
+    type: 'system',
+    userName: '',
+    message: data.userName + 'さんが入室しました'
+  })
 }
+
 
 // サーバから受信した退室メッセージを受け取り画面上に表示する
 const onReceiveExit = (data) => {
-  chatList.unshift(data + "さんが退室しました")
+    chatList.unshift({
+    type: 'system',
+    userName: '',
+    message: data.userName + 'さんが退室しました'
+  })
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
 const onReceivePublish = (data) => {
-  chatList.push({ userName: data.userName, message: data.message })
+  chatList.unshift({
+    type: 'message',
+    userName: data.userName + 'さん',
+    message: data.message
+  })
 }
 // #endregion
 
@@ -92,11 +113,16 @@ const registerSocketEvent = () => {
       <textarea v-model="chatContent" variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area"></textarea>
       <div class="mt-5">
         <button @click="onPublish" class="button-normal">投稿</button>
-        <button class="button-normal util-ml-8px">メモ</button>
+        <button @click="onMemo" class="button-normal util-ml-8px">メモ</button>
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">
      <li class="item mt-4" v-for="(chat, i) in chatList" :key="i">
-  <strong>{{ chat.userName }}:</strong> {{ chat.message }}
+      <span v-if="chat.type === 'system'" class="system-message">
+        {{ chat.message }}
+      </span>
+      <span v-else>
+        <strong>{{ chat.userName }}:</strong> {{ chat.message }}
+      </span>
      </li>
       </div>
     </div>
