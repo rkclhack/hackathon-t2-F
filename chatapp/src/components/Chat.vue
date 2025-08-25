@@ -48,12 +48,12 @@ const onMemo = () => {
 // #region socket event handler
 // サーバから受信した入室メッセージ画面上に表示する
 const onReceiveEnter = (data) => {
-  chatList.unshift(data+ "さんが入室しました")
+  chatList.unshift({ userName: data.userName, message: data.userName + "さんが入室しました" })
 }
 
 // サーバから受信した退室メッセージを受け取り画面上に表示する
 const onReceiveExit = (data) => {
-  chatList.unshift(data + "さんが退室しました")
+  chatList.unshift({ userName: data.userName, message: data.userName + "さんが退室しました" })
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
