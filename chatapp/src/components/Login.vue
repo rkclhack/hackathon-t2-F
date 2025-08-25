@@ -24,7 +24,10 @@ const onEnter = () => {
     alert("ユーザ名が未記入ですTT")
     return
   }
-
+  // 入室メッセージを送信
+  socket.emit("enterEvent", 
+    inputUserName.value
+  )
   // 全体で使用するnameに入力されたユーザー名を格納
   userName.value = inputUserName.value
   // チャット画面へ遷移

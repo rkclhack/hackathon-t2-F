@@ -21,42 +21,44 @@ onMounted(() => {
 })
 // #endregion
 
-// #region browser event handler
-// 投稿メッセージをサーバに送信する
 const onPublish = () => {
-
-  // 入力欄を初期化
-
+  if (chatContent.value.trim() === "") return
+  socket.emit("publishEvent", {
+    userName: String(userName), // 文字列に変換
+    message: chatContent.value,
+  })
+  chatContent.value = ""
 }
 
 // 退室メッセージをサーバに送信する
 const onExit = () => {
-
+  socket.emit("exitEvent", userName.value)
 }
 
 // メモを画面上に表示する
 const onMemo = () => {
+  if (!chatContent.value.trim()) return//もし、入力欄が空文字やスペースだけだった場合は 何もしないで終了。
   // メモの内容を表示
-
+  chatList.unshift(`${userName.value}さんのメモ：「${chatContent.value}」`)
   // 入力欄を初期化
-
+  chatContent.value = ""
 }
 // #endregion
 
 // #region socket event handler
 // サーバから受信した入室メッセージ画面上に表示する
 const onReceiveEnter = (data) => {
-  chatList.push()
+  chatList.unshift(data+ "さんが入室しました")
 }
 
 // サーバから受信した退室メッセージを受け取り画面上に表示する
 const onReceiveExit = (data) => {
-  chatList.push()
+  chatList.unshift(data + "さんが退室しました")
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
 const onReceivePublish = (data) => {
-  chatList.push()
+  chatList.push({ userName: data.userName, message: data.message })
 }
 // #endregion
 
@@ -65,17 +67,18 @@ const onReceivePublish = (data) => {
 const registerSocketEvent = () => {
   // 入室イベントを受け取ったら実行
   socket.on("enterEvent", (data) => {
-
+    onReceiveEnter(data)
   })
 
   // 退室イベントを受け取ったら実行
   socket.on("exitEvent", (data) => {
-
+    onReceiveExit(data)
   })
 
   // 投稿イベントを受け取ったら実行
   socket.on("publishEvent", (data) => {
-
+    onReceivePublish(data)
+    console.log(data)
   })
 }
 // #endregion
@@ -86,15 +89,15 @@ const registerSocketEvent = () => {
     <h1 class="text-h3 font-weight-medium">Vue.js Chat チャットルーム</h1>
     <div class="mt-10">
       <p>ログインユーザ：{{ userName }}さん</p>
-      <textarea variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area"></textarea>
+      <textarea v-model="chatContent" variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area"></textarea>
       <div class="mt-5">
-        <button class="button-normal">投稿</button>
+        <button @click="onPublish" class="button-normal">投稿</button>
         <button class="button-normal util-ml-8px">メモ</button>
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">
-        <ul>
-          <li class="item mt-4" v-for="(chat, i) in chatList" :key="i">{{ chat }}</li>
-        </ul>
+     <li class="item mt-4" v-for="(chat, i) in chatList" :key="i">
+  <strong>{{ chat.userName }}:</strong> {{ chat.message }}
+     </li>
       </div>
     </div>
     <router-link to="/" class="link">
@@ -102,6 +105,7 @@ const registerSocketEvent = () => {
     </router-link>
   </div>
 </template>
+
 
 <style scoped>
 .link {
