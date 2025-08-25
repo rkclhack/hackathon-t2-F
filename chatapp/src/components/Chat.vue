@@ -96,7 +96,7 @@ const registerSocketEvent = () => {
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">
      <li class="item mt-4" v-for="(chat, i) in chatList" :key="i">
-  <strong>{{ chat.userName }}:</strong> {{ chat.message }}
+  <strong>{{ userName }}:</strong> {{ chat.message }}
      </li>
       </div>
     </div>

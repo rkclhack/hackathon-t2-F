@@ -29,7 +29,7 @@ const onEnter = () => {
     inputUserName.value
   )
   // 全体で使用するnameに入力されたユーザー名を格納
-  userName.value = inputUserName.value
+  userName.value = String(inputUserName.value)
   // チャット画面へ遷移
   router.push({ name: "chat" })
 }
