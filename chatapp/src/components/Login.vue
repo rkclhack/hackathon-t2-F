@@ -38,21 +38,129 @@ const onEnter = () => {
 </script>
 
 <template>
-  <div class="mx-auto my-5 px-4">
-    <h1 class="text-h3 font-weight-medium">Vue.js Chat サンプル</h1>
-    <div class="mt-10">
-      <p>ユーザー名</p>
-      <input type="text" v-model="inputUserName" class="user-name-text" />
-      <!-- <input type="text" v-model="inputUserName" class="user-name-text" /> -->
+  <div class="login-form-container">
+    <div class="form-wrapper">
+      <h1 class="form-title">StuFeed Chat</h1>
+      
+      <form @submit.prevent="onEnter" class="login-form">
+        <!-- ユーザー名 -->
+        <div class="form-group">
+          <label for="userName" class="form-label">ユーザー名</label>
+          <input 
+            type="text" 
+            id="userName"
+            v-model="inputUserName" 
+            class="form-input"
+            placeholder="ユーザー名を入力してください"
+            required
+          />
+        </div>
+
+        <!-- 入室ボタン -->
+        <button type="submit" class="submit-button">
+          入室する
+        </button>
+      </form>
     </div>
-    <button type="button" @click="onEnter" class="button-normal">入室する</button>
   </div>
 </template>
 
 <style scoped>
-.user-name-text {
-  width: 200px;
-  border: 1px solid #888;
-  margin-bottom: 16px;
+.login-form-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.form-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.form-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  margin-bottom: 30px;
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.form-input {
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: #fafbfc;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.submit-button {
+  background: linear-gradient(45deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .form-wrapper {
+    padding: 20px;
+    margin: 10px;
+  }
+  
+  .form-title {
+    font-size: 24px;
+  }
 }
 </style>
