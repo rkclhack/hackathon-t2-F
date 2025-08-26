@@ -1,5 +1,6 @@
 <script>
 import { ref, onMounted, inject } from 'vue'
+import router from '../router'
 
 // Reportクラスの定義
 class Report {
@@ -67,6 +68,7 @@ export default {
 
       // 成功メッセージを表示
       alert('レポートが正常に投稿されました！')
+      router.push("")
 
       // フォームをリセット（オプション）
       // resetForm()

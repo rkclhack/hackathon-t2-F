@@ -18,7 +18,7 @@ const router = createRouter({
       name: "chat",
       component: Chat,
       beforeEnter: (to, from, next) => {
-        if (from.name === "login") {
+        if (from.name === "login" || from.name == "report") {
           next()
         } else {
           next({ name: "login" })
@@ -34,13 +34,13 @@ const router = createRouter({
       path: "/chat/receive/:id",
       name: "receive",
       component: Receive,
-      // beforeEnter: (to, from, next) => {
-      //   if(from.name === "login" || from.name === "chat"){
-      //     next()
-      //   } else {
-      //     next({ name:"login" })
-      //   }
-      // },
+      beforeEnter: (to, from, next) => {
+        if (from.name === "login" || from.name === "chat") {
+          next()
+        } else {
+          next({ name: "login" })
+        }
+      },
     },
     {
       path: "/report/",

@@ -2,6 +2,7 @@
 import { inject, ref, reactive, computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import socketManager from '../socketManager.js'
+import FB from './FB.vue'
 import ChatContent from './Button/Chat_Content.vue'
 import HowUse from './Button/How-Use.vue'
 
@@ -17,19 +18,46 @@ const socket = socketManager.getInstance()
 // #region reactive variable
 const chatContent = ref("")
 const chatList = reactive([])
+const fbList = reactive([])
 // #endregion
 
 // #region lifecycle
 onMounted(() => {
   registerSocketEvent()
+  // ダミーデータを追加
+  fbList.push({
+    type: 'message',
+    userName: '田中さん',
+    message: 'チャットアプリのUIがとても使いやすいです！機能も充実していて素晴らしいと思います。',
+    timestamp: new Date(),
+    reactions: ['👍', '❤️'],
+    isLiked: false,
+    comments: [
+      {
+        userName: '佐藤',
+        text: '私も同感です！'
+      }
+    ]
+  })
 })
 // #endregion
 
 const onPublish = () => {
   if (chatContent.value.trim() === "") return
+  
+  // チャット履歴に自分の投稿を即座に追加
+  const myMessage = {
+    type: 'message',
+    userName: userName.value + 'さん',
+    message: chatContent.value,
+    timestamp: new Date()
+  }
+  chatList.unshift(myMessage)
+  
+  // サーバーに送信
   socket.emit("publishEvent", {
     type: 'message',
-    userName: userName.value, // 文字列に変換
+    userName: userName.value,
     message: chatContent.value,
   })
   chatContent.value = ""
@@ -61,6 +89,11 @@ const onReport = () => {
   router.push({ name: "report" })
 }
 
+// Send画面へ遷移
+const onFeedback = () => {
+  router.push({ name: "send" })
+}
+
 // #endregion
 
 // #region socket event handler
@@ -83,13 +116,20 @@ const onReceiveExit = (data) => {
   })
 }
 
-// サーバから受信した投稿メッセージを画面上に表示する
+// サーバから受信した投稿メッセージをFB表示用に追加
 const onReceivePublish = (data) => {
-  chatList.unshift({
-    type: 'message',
-    userName: data.userName + 'さん',
-    message: data.message
-  })
+  // 他のユーザーからのメッセージのみFB表示に追加
+  if (data.userName !== userName.value) {
+    fbList.unshift({
+      type: 'message',
+      userName: data.userName + 'さん',
+      message: data.message,
+      timestamp: new Date(),
+      reactions: [],
+      isLiked: false,
+      comments: []
+    })
+  }
 }
 
 // チャットリストを処理してChatContentコンポーネント用のデータに変換
@@ -139,7 +179,7 @@ const registerSocketEvent = () => {
 <template>
   <div class="chat-container">
     <div class="chat-header">
-      <h1 class="text-h3 font-weight-medium">Vue.js Chat チャットルーム</h1>
+      <h1 class="text-h3 font-weight-medium">FB特化型チャットアプリ</h1>
       <div class="header-actions">
         <HowUse />
         <router-link to="/" class="link">
@@ -158,6 +198,9 @@ const registerSocketEvent = () => {
           <span v-if="chat.type === 'system'" class="system-message">
             {{ chat.message }}
           </span>
+          <span v-else-if="chat.type === 'memo'" class="memo-message">
+            <strong>{{ chat.userName }}:</strong> {{ chat.message }}
+          </span>
           <span v-else class="user-message">
             <strong>{{ chat.userName }}:</strong> {{ chat.message }}
           </span>
@@ -167,6 +210,22 @@ const registerSocketEvent = () => {
     
     <div class="chat-messages-container empty-state" v-else>
       <p class="empty-message">まだメッセージがありません。最初のメッセージを送信してみましょう！</p>
+    </div>
+    
+    <!-- FB表示エリア -->
+    <div class="fb-display-container" v-if="fbList.length !== 0">
+      <h3 class="fb-title">📘 Facebook風フィードバック</h3>
+      <div class="fb-messages">
+        <FB 
+          v-for="(chat, i) in fbList" 
+          :key="'fb-' + i" 
+          :chat-data="chat" 
+        />
+      </div>
+    </div>
+    
+    <div class="fb-display-container empty-state" v-else>
+      <p class="empty-message">まだフィードバックがありません。</p>
     </div>
     
     <!-- 入力欄を最下部に配置 -->
@@ -190,12 +249,26 @@ const registerSocketEvent = () => {
 
 <style scoped>
 .chat-container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
   height: 100vh;
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 20px;
+  grid-template-rows: auto auto 1fr auto;
+}
+
+.chat-header {
+  grid-column: 1 / -1;
+}
+
+.user-info {
+  grid-column: 1 / -1;
+}
+
+.chat-input-container {
+  grid-column: 1 / -1;
 }
 
 .chat-header {
@@ -226,16 +299,66 @@ const registerSocketEvent = () => {
 }
 
 .chat-messages-container {
-  flex: 1;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
-  margin-bottom: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+
+.fb-display-container {
+  background: linear-gradient(135deg, #f0f2f5 0%, #e4e6ea 100%);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #d1d5db;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.fb-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1877f2;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fb-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.fb-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.fb-messages::-webkit-scrollbar-track {
+  background: #f0f2f5;
+  border-radius: 4px;
+}
+
+.fb-messages::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.fb-messages::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
 }
 
 .chat-messages-container.empty-state {
@@ -252,7 +375,6 @@ const registerSocketEvent = () => {
 }
 
 .chat-input-container {
-  flex-shrink: 0;
   background: #ffffff;
   border: 2px solid #e2e8f0;
   border-radius: 16px;
@@ -362,6 +484,11 @@ const registerSocketEvent = () => {
   color: #334155;
 }
 
+.memo-message {
+  color: #059669;
+  font-style: italic;
+}
+
 .util-ml-8px {
   margin-left: 8px;
 }
@@ -417,6 +544,26 @@ const registerSocketEvent = () => {
 .button-normal:nth-child(2):hover {
   background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
   box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+}
+
+.fb-btn {
+  background: linear-gradient(135deg, #1877f2 0%, #42a5f5 100%);
+  box-shadow: 0 6px 20px rgba(24, 119, 242, 0.3);
+}
+
+.fb-btn:hover {
+  background: linear-gradient(135deg, #42a5f5 0%, #1877f2 100%);
+  box-shadow: 0 10px 30px rgba(24, 119, 242, 0.4);
+}
+
+.fb-view-btn {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+}
+
+.fb-view-btn:hover {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
 }
 
 .button-exit {
