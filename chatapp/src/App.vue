@@ -9,7 +9,6 @@ const addChatMessage = (message) => {
 const clearChatHistory = () => {
   chatList.splice(0, chatList.length)
 }
-
 // const reportData = reactive({
 //   task: '',
 //   url: '',
