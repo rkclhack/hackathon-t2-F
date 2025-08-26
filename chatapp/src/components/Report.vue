@@ -68,7 +68,7 @@ export default {
 
       // 成功メッセージを表示
       alert('レポートが正常に投稿されました！')
-      router.push("")
+      router.push("/chat")
 
       // フォームをリセット（オプション）
       // resetForm()
