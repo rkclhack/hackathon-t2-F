@@ -1,5 +1,6 @@
 <script setup>
 import { inject, ref, reactive, computed, onMounted } from "vue"
+import { useRouter } from "vue-router"
 import socketManager from '../socketManager.js'
 import ChatContent from './Button/Chat_Content.vue'
 import HowUse from './Button/How-Use.vue'
@@ -9,6 +10,7 @@ const userName = inject("userName")
 // #endregion
 
 // #region local variable
+const router = useRouter()
 const socket = socketManager.getInstance()
 // #endregion
 
@@ -26,7 +28,8 @@ onMounted(() => {
 const onPublish = () => {
   if (chatContent.value.trim() === "") return
   socket.emit("publishEvent", {
-    userName: String(userName), // 文字列に変換
+    type: 'message',
+    userName: userName.value, // 文字列に変換
     message: chatContent.value,
   })
   chatContent.value = ""
@@ -34,37 +37,58 @@ const onPublish = () => {
 
 // 退室メッセージをサーバに送信する
 const onExit = () => {
-  socket.emit("exitEvent", userName.value)
+  socket.emit("exitEvent", {
+    type: 'system',
+    userName: userName.value
+  })
 }
 
 // メモを画面上に表示する
 const onMemo = () => {
   if (!chatContent.value.trim()) return//もし、入力欄が空文字やスペースだけだった場合は 何もしないで終了。
   // メモの内容を表示
-  chatList.unshift(`${userName.value}さんのメモ：「${chatContent.value}」`)
+  chatList.unshift({
+    type: 'memo',
+    userName: userName.value + 'さんのメモ',
+    message: chatContent.value
+  })
   // 入力欄を初期化
   chatContent.value = ""
 }
+
+// レポート画面へ遷移
+const onReport = () => {
+  router.push({ name: "report" })
+}
+
 // #endregion
 
 // #region socket event handler
 // サーバから受信した入室メッセージ画面上に表示する
 const onReceiveEnter = (data) => {
-  chatList.unshift(data+ "さんが入室しました")
+    chatList.unshift({
+    type: 'system',
+    userName: '',
+    message: data.userName + 'さんが入室しました'
+  })
 }
+
 
 // サーバから受信した退室メッセージを受け取り画面上に表示する
 const onReceiveExit = (data) => {
-  chatList.unshift(data + "さんが退室しました")
+    chatList.unshift({
+    type: 'system',
+    userName: '',
+    message: data.userName + 'さんが退室しました'
+  })
 }
 
 // サーバから受信した投稿メッセージを画面上に表示する
 const onReceivePublish = (data) => {
-  chatList.push({ 
-    userName: data.userName, 
-    message: data.message,
-    timestamp: new Date(),
-    id: Math.random().toString(36).substr(2, 9)
+  chatList.unshift({
+    type: 'message',
+    userName: data.userName + 'さん',
+    message: data.message
   })
 }
 
@@ -115,7 +139,7 @@ const registerSocketEvent = () => {
 <template>
   <div class="chat-container">
     <div class="chat-header">
-      <h1 class="text-h3 font-weight-medium">Vue.js FB特化 チャットルーム</h1>
+      <h1 class="text-h3 font-weight-medium">Vue.js Chat チャットルーム</h1>
       <div class="header-actions">
         <HowUse />
         <router-link to="/" class="link">
@@ -130,16 +154,14 @@ const registerSocketEvent = () => {
     <div class="chat-messages-container" v-if="chatList.length !== 0">
       <h3 class="messages-title">💬 チャット履歴</h3>
       <div class="chat-messages">
-        <ChatContent
-          v-for="(chat, i) in processedChatList"
-          :key="i"
-          :userName="chat.userName || userName"
-          :message="chat.message || chat"
-          :timestamp="chat.timestamp || new Date()"
-          :isOwnMessage="chat.userName === userName"
-          :messageId="chat.id || `msg-${i}`"
-          :showFeedbackButtons="true"
-        />
+        <div class="message-item" v-for="(chat, i) in chatList" :key="i">
+          <span v-if="chat.type === 'system'" class="system-message">
+            {{ chat.message }}
+          </span>
+          <span v-else class="user-message">
+            <strong>{{ chat.userName }}:</strong> {{ chat.message }}
+          </span>
+        </div>
       </div>
     </div>
     
@@ -159,14 +181,8 @@ const registerSocketEvent = () => {
       <div class="input-buttons">
         <button @click="onPublish" class="button-normal">投稿</button>
         <button @click="onMemo" class="button-normal util-ml-8px">メモ</button>
+        <button @click="onReport" class="button-normal util-ml-8px">レポート</button>
       </div>
-    </div>
-    
-    <!-- 従来の表示も残す（互換性のため） -->
-    <div class="legacy-chat mt-5" v-if="chatList.length !== 0" style="display: none;">
-      <li class="item mt-4" v-for="(chat, i) in chatList" :key="i">
-        <strong>{{ userName }}:</strong> {{ chat.message }}
-      </li>
     </div>
   </div>
 </template>
@@ -325,6 +341,25 @@ const registerSocketEvent = () => {
 
 .item {
   display: block;
+}
+
+.message-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.message-item:last-child {
+  border-bottom: none;
+}
+
+.system-message {
+  color: #64748b;
+  font-style: italic;
+  font-size: 14px;
+}
+
+.user-message {
+  color: #334155;
 }
 
 .util-ml-8px {
