@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from "vue-router"
 import Report from "../components/Report.vue"
 import Chat from "../components/Chat.vue"
 import Login from "../components/Login.vue"
+import Receive from "../components/Receive.vue"
+
 
 const router = createRouter({
   history: createWebHistory(),
@@ -22,6 +24,16 @@ const router = createRouter({
         }
       },
     },{
+      path: "/chat/receive/:id",
+      name: "receive",
+      component: Receive,
+      // beforeEnter: (to, from, next) => {
+      //   if(from.name === "login" || from.name === "chat"){
+      //     next()
+      //   } else {
+      //     next({ name:"login" })
+      //   }
+      // },
       path: "/report/",
       name: "report",
       component: Report

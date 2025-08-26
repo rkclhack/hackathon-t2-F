@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive } from "vue"
 
-const title = "rakussssssss"
+const title = "rakussssssssssss"
 const message = ref("")
 const list = reactive([])
 
