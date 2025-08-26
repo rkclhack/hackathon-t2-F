@@ -1,0 +1,157 @@
+<script setup>
+import { ref, inject } from "vue";
+import { useRouter } from "vue-router"; 
+import socketManager from '../socketManager.js';
+
+// 親から投稿データを受け取る
+const props = defineProps({
+  report: {
+    type: Object,
+  }
+});
+
+// provide/injectを使ってユーザー情報を取得
+const username = inject("username"); 
+
+const socket = socketManager.getInstance();
+const router = useRouter(); // ★ここが追加されました
+const fb_eva = ref(""); // 評価を保持
+const fb_comment = ref(""); // コメントを保持
+
+const onSendFeedback = () => {
+  if (!fb_eva.value || !fb_comment.value.trim()) {
+    alert("評価とコメントの両方を入力してください。");
+    return;
+  }
+  
+  // reportオブジェクトが存在するかを確認
+  const postId = props.report ? props.report.ID : 'test-id';
+
+  // サーバーに送信するデータ
+  const feedbackData = {
+    fb_eva: fb_eva.value,
+    fb_comment: fb_comment.value,
+    post_id: postId,
+    reviewer_username: username.value
+  };
+
+  socket.emit("sendFeedbackEvent", feedbackData); 
+
+  console.log("送信されたフィードバック:", feedbackData);
+  
+  // 送信後にChat.vueに戻る
+  router.push({ name: 'chat' }); 
+
+  fb_eva.value = "";
+  fb_comment.value = "";
+};
+</script>
+
+<template>
+  <div class="feedback-container">
+    <h2 class="feedback-title">投稿へのフィードバック</h2>
+    
+    <div class="report-preview" v-if="report">
+      <p><strong>投稿者:</strong> {{ report.username }}</p>
+      <p><strong>タスク:</strong> {{ report.task }}</p>
+      <p><strong>URL:</strong> {{ report.url }}</p>
+    </div>
+    <div v-else>
+      <p>表示する投稿がありません。URLから直接アクセスしたため、データが渡されていません。</p>
+    </div>
+
+    <div class="feedback-section">
+      <p class="section-label">評価：</p>
+      <div class="button-group">
+        <button @click="fb_eva = 'good'" :class="{ active: fb_eva === 'good' }">Good</button>
+        <button @click="fb_eva = 'bad'" :class="{ active: fb_eva === 'bad' }">Bad</button>
+      </div>
+    </div>
+
+    <div class="feedback-section">
+      <p class="section-label">コメント：</p>
+      <textarea v-model="fb_comment" placeholder="フィードバックコメントを入力してください" class="comment-textarea"></textarea>
+    </div>
+    <router-link :to="{ name: 'chat' }" class="router-link">
+      <button @click="onSendFeedback" class="send-button">送信</button>
+    </router-link>
+
+  </div>
+</template>
+
+<style scoped>
+.feedback-container {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.feedback-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.report-preview {
+  background-color: #eee;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.feedback-section {
+  margin-bottom: 15px;
+}
+
+.section-label {
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.button-group button {
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #fff;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.button-group button:hover {
+  background-color: #e9e9e9;
+}
+
+.button-group button.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+.comment-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.send-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.send-button:hover {
+  background-color: #218838;
+}
+</style>
