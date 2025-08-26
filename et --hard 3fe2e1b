@@ -1,0 +1,20 @@
+[33m53dc4a8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix/UI_login[m[33m)[m HEAD@{0}: rebase (finish): returning to refs/heads/fix/UI_login
+[33m53dc4a8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix/UI_login[m[33m)[m HEAD@{1}: rebase (pick): Login.vueのレイアウトを改善し、ユーザー名入力フォームと入室ボタンを追加。スタイルを更新し、レスポンシブ対応を強化。
+[33m11969c6[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{2}: rebase (start): checkout master
+[33m3fe2e1b[m[33m ([m[1;31morigin/fix/UI_login[m[33m)[m HEAD@{3}: checkout: moving from master to fix/UI_login
+[33m11969c6[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m HEAD@{4}: pull: Fast-forward
+[33m0a3d539[m HEAD@{5}: checkout: moving from fix/UI_login to master
+[33m3fe2e1b[m[33m ([m[1;31morigin/fix/UI_login[m[33m)[m HEAD@{6}: commit: Login.vueのレイアウトを改善し、ユーザー名入力フォームと入室ボタンを追加。スタイルを更新し、レスポンシブ対応を強化。
+[33m0a3d539[m HEAD@{7}: checkout: moving from master to fix/UI_login
+[33m0a3d539[m HEAD@{8}: pull: Fast-forward
+[33mfda4eaf[m HEAD@{9}: checkout: moving from feature/report-create-screen to master
+[33mbd61414[m[33m ([m[1;31morigin/feature/report-create-screen[m[33m, [m[1;32mfeature/report-create-screen[m[33m)[m HEAD@{10}: commit: Chat.vueにレポート画面遷移機能を追加し、Report.vueコンポーネントを新規作成。ルーター設定を更新。
+[33meebd7d1[m HEAD@{11}: commit: Report.vueコンポーネントを新規作成
+[33mfda4eaf[m HEAD@{12}: checkout: moving from master to feature/report-create-screen
+[33mfda4eaf[m HEAD@{13}: pull: Fast-forward
+[33m9cbdc98[m HEAD@{14}: checkout: moving from fix/user-activity-log to master
+[33m85776f5[m[33m ([m[1;31morigin/fix/user-activity-log[m[33m, [m[1;32mfix/user-activity-log[m[33m)[m HEAD@{15}: commit: メッセージ送信時にタイプを追加し、入室メッセージの送信形式を統一
+[33m11dd5c4[m HEAD@{16}: commit: 投稿メッセージの表示順を変更し、最新のメッセージが上に来るように修正。package-lock.jsonを追加。
+[33m4602ed2[m HEAD@{17}: rebase (finish): returning to refs/heads/fix/user-activity-log
+[33m4602ed2[m HEAD@{18}: rebase (pick): WIP: 作業中の変更
+[33m9cbdc98[m HEAD@{19}: rebase (start): checkout master
