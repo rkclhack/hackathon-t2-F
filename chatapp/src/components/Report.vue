@@ -1,5 +1,6 @@
 <script>
 import { ref, onMounted, inject } from 'vue'
+import router from '../router'
 import socketManager from '../socketManager.js'
 
 // Reportクラスの定義
@@ -80,6 +81,7 @@ export default {
 
       // 成功メッセージを表示
       alert('レポートが正常に投稿されました！')
+      router.push("")
 
       // フォームをリセット（オプション）
       // resetForm()
