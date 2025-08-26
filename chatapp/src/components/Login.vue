@@ -55,4 +55,48 @@ const onEnter = () => {
   border: 1px solid #888;
   margin-bottom: 16px;
 }
+
+.button-normal {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 16px;
+}
+
+.button-normal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s;
+}
+
+.button-normal:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+  background: linear-gradient(135deg, #5b52f0 0%, #8b5cf6 100%);
+}
+
+.button-normal:hover::before {
+  left: 100%;
+}
+
+.button-normal:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+}
 </style>
