@@ -1,7 +1,7 @@
 <script>
 import { ref, onMounted, inject } from 'vue'
 import router from '../router'
-import socketManager from '../socketManager.js'
+  import socketManager from '../socketManager.js'
 
 // Reportクラスの定義
 class Report {
@@ -20,9 +20,8 @@ export default {
   props: {
   },
   setup(props) {
-    const socket = socketManager.getInstance()
-
     // injectを使用してユーザー名を取得
+    const socket = socketManager.getInstance()
     const username = inject("userName")
 
     // リアクティブな変数の定義
@@ -52,12 +51,6 @@ export default {
 
     // フォーム送信処理
     const submitReport = () => {
-      // 入力値の検証
-      if (!input_task.value.trim() || !input_url.value.trim() || !input_process.value.trim()) {
-        alert('すべての項目を入力してください．')
-        return
-      }
-
       // 投稿時間とIDを設定
       post_time.value = generatePostTime()
       ID.value = generateID()
@@ -69,22 +62,17 @@ export default {
         input_process.value,   // process
         post_time.value,       // post_time
         ID.value,              // ID
-        username.value         // usernameS
+        username.value         // username
       )
 
       // Socket.IOでサーバーにデータを送信
       socket.emit('reportSubmit', report)
       console.log('レポートをサーバーに送信しました:', report)
 
-      // コンソールにデータを出力（実際の処理では API に送信など）
-      console.log('レポートが投稿されました:', report)
-
       // 成功メッセージを表示
       alert('レポートが正常に投稿されました！')
       router.push("/chat")
 
-      // フォームをリセット（オプション）
-      // resetForm()
     }
 
     // フォームリセット関数
@@ -174,17 +162,6 @@ export default {
           投稿する
         </button>
       </form>
-
-      <!-- デバッグ用：現在の値を表示 -->
-      <div class="debug-info" v-if="showDebugInfo">
-        <h3>現在の値（デバッグ用）</h3>
-        <p><strong>ID:</strong> {{ ID }}</p>
-        <p><strong>ユーザー名:</strong> {{ username }}</p>
-        <p><strong>タスクタイトル:</strong> {{ input_task }}</p>
-        <p><strong>GitHub URL:</strong> {{ input_url }}</p>
-        <p><strong>思考プロセス:</strong> {{ input_process }}</p>
-        <p><strong>投稿時間:</strong> {{ post_time }}</p>
-      </div>
     </div>
   </div>
 </template>

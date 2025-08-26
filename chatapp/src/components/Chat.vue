@@ -1,9 +1,8 @@
 <script setup>
-import { inject, ref, reactive, computed, onMounted, nextTick } from "vue"
+import { inject, ref,  onMounted, onBeforeUnmount, nextTick } from "vue"
 import { useRouter } from "vue-router"
 import socketManager from '../socketManager.js'
 import FB from './FB.vue'
-import ChatContent from './Button/Chat_Content.vue'
 import HowUse from './Button/How-Use.vue'
 
 // #region global state
@@ -17,8 +16,9 @@ const socket = socketManager.getInstance()
 
 // #region reactive variable
 const chatContent = ref("")
-const chatList = reactive([])
-const fbList = reactive([])
+const chatList = inject("chatList")
+const clearChatHistory = inject("clearChatHistory")
+const fbList = inject("fbList")
 const chatMessages = ref(null)
 // #endregion
 
@@ -27,8 +27,47 @@ const scrollToBottom = () => {
   nextTick(() => {
     if (chatMessages.value) {
       chatMessages.value.scrollTop = chatMessages.value.scrollHeight
+      // さらに確実にスクロールするために少し遅延を追加
+      setTimeout(() => {
+        if (chatMessages.value) {
+          chatMessages.value.scrollTop = chatMessages.value.scrollHeight
+        }
+      }, 100)
     }
   })
+}
+
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return ''
+  
+  const now = new Date()
+  const messageTime = new Date(timestamp)
+  
+  // 今日の日付かチェック
+  const isToday = now.toDateString() === messageTime.toDateString()
+  
+  if (isToday) {
+    // 今日なら時間のみ表示
+    return messageTime.toLocaleTimeString('ja-JP', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    })
+  } else {
+    // 今日以外なら日付と時間を表示
+    return messageTime.toLocaleString('ja-JP', { 
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit', 
+      minute: '2-digit' 
+    })
+  }
+}
+
+const isOwnMessage = (chat) => {
+  // 自分のメッセージかどうかを判定
+  // チャットの userName から「さん」を除いた名前で比較
+  const chatUserName = chat.userName.replace('さん', '')
+  return chatUserName === userName.value
 }
 // #endregion
 
@@ -36,21 +75,7 @@ const scrollToBottom = () => {
 
 onMounted(() => {
   registerSocketEvent()
-  
-  // 入室メッセージをサーバーに送信
-  socket.emit("enterEvent", {
-    type: 'system',
-    userName: userName.value
-  })
-  
-  // ダミーデータを直接追加
-  fbList.push({
-    title: 'チャットアプリプロジェクト',
-    githubUrl: 'https://github.com/example/chat-app',
-    thinkingProcess: 'Vue.jsとSocket.ioを使ってリアルタイムチャットアプリを作成しました。ユーザビリティとレスポンシブデザインを重視し、直感的なインターフェースを心がけました。コンポーネント設計により再利用性を高め、メンテナンス性を向上させています。',
-    userName: '田中さん',
-    timestamp: new Date()
-  })
+
 })
 // #endregion
 
@@ -64,9 +89,10 @@ const onPublish = () => {
     message: chatContent.value,
     timestamp: new Date()
   }
+  
   chatList.push(myMessage)
   scrollToBottom()
-  
+
   // サーバーに送信
   socket.emit("publishEvent", {
     type: 'message',
@@ -91,7 +117,8 @@ const onMemo = () => {
   chatList.push({
     type: 'memo',
     userName: userName.value + 'さんのメモ',
-    message: chatContent.value
+    message: chatContent.value,
+    timestamp: new Date()
   })
   scrollToBottom()
   // 入力欄を初期化
@@ -112,7 +139,8 @@ const onReceiveEnter = (data) => {
     chatList.push({
     type: 'system',
     userName: '',
-    message: data.userName + 'さんが入室しました'
+    message: data.userName + 'さんが入室しました',
+    timestamp: new Date()
   })
   scrollToBottom()
 }
@@ -123,16 +151,17 @@ const onReceiveExit = (data) => {
     chatList.push({
     type: 'system',
     userName: '',
-    message: data.userName + 'さんが退室しました'
+    message: data.userName + 'さんが退室しました',
+    timestamp: new Date()
   })
   scrollToBottom()
 }
 
-// サーバから受信した投稿メッセージをチャット履歴とFB表示用に追加
+// サーバから受信した投稿メッセージをチャット履歴のみに追加
 const onReceivePublish = (data) => {
   // 自分以外のユーザーからのメッセージをチャット履歴に追加
   if (data.userName !== userName.value) {
-    // チャット履歴に追加
+    // チャット履歴にのみ追加（FB表示には追加しない）
     chatList.push({
       type: 'message',
       userName: data.userName + 'さん',
@@ -140,41 +169,39 @@ const onReceivePublish = (data) => {
       timestamp: new Date()
     })
     scrollToBottom()
-    
-    // FB表示用にも追加
-    fbList.unshift({
-      type: 'message',
-      userName: data.userName + 'さん',
-      message: data.message,
-      timestamp: new Date(),
-      reactions: [],
-      isLiked: false,
-      comments: []
-    })
   }
 }
 
+const onReceiveReport = (data) => {
+  // 受信したレポートデータをFBリストに追加
+  fbList.push({
+    title: data.task,
+    githubUrl: data.url,
+    thinkingProcess: data.process,
+    userName: data.username + 'さん',
+    timestamp: new Date(data.post_time)
+  })
+  console.log("Report received:", data)
+  scrollToBottom()
+}
 // #endregion
 
 // #region local methods
 // イベント登録をまとめる
 const registerSocketEvent = () => {
-  // 入室イベントを受け取ったら実行
-  socket.on("enterEvent", (data) => {
-    onReceiveEnter(data)
-  })
-
-  // 退室イベントを受け取ったら実行
-  socket.on("exitEvent", (data) => {
-    onReceiveExit(data)
-  })
-
-  // 投稿イベントを受け取ったら実行
-  socket.on("publishEvent", (data) => {
-    onReceivePublish(data)
-    console.log(data)
-  })
+  socket.on("enterEvent", onReceiveEnter)
+  socket.on("exitEvent", onReceiveExit)
+  socket.on("publishEvent", onReceivePublish)
+  socket.on("reportSubmit", onReceiveReport)
 }
+
+onBeforeUnmount(() => {
+  // コンポーネントがアンマウントされる際にソケットのリスナーを解除
+  socket.off("enterEvent", onReceiveEnter)
+  socket.off("exitEvent", onReceiveExit)
+  socket.off("publishEvent", onReceivePublish)
+  socket.off("reportSubmit", onReceiveReport)
+})
 // #endregion
 </script>
 
@@ -197,15 +224,25 @@ const registerSocketEvent = () => {
       <h3 class="messages-title">💬 チャット履歴</h3>
       <div class="chat-messages" ref="chatMessages">
         <div class="message-item" v-for="(chat, i) in chatList" :key="i">
-          <span v-if="chat.type === 'system'" class="system-message">
-            {{ chat.message }}
-          </span>
-          <span v-else-if="chat.type === 'memo'" class="memo-message">
-            <strong>{{ chat.userName }}:</strong> {{ chat.message }}
-          </span>
-          <span v-else class="user-message">
-            <strong>{{ chat.userName }}:</strong> {{ chat.message }}
-          </span>
+          <!-- システムメッセージ（入退室など）は中央配置 -->
+          <div v-if="chat.type === 'system'" class="system-message">
+            <span class="message-text">{{ chat.message }}</span>
+            <span class="message-timestamp">{{ formatTimestamp(chat.timestamp) }}</span>
+          </div>
+          <!-- メモメッセージは自分のメッセージとして右配置 -->
+          <div v-else-if="chat.type === 'memo'" class="message-bubble own-message">
+            <div class="message-content">
+              <strong>{{ chat.userName }}:</strong> {{ chat.message }}
+            </div>
+            <div class="message-timestamp">{{ formatTimestamp(chat.timestamp) }}</div>
+          </div>
+          <!-- 通常のメッセージは送信者によって左右配置 -->
+          <div v-else class="message-bubble" :class="{ 'own-message': isOwnMessage(chat), 'other-message': !isOwnMessage(chat) }">
+            <div class="message-content">
+              <strong>{{ chat.userName }}:</strong> {{ chat.message }}
+            </div>
+            <div class="message-timestamp">{{ formatTimestamp(chat.timestamp) }}</div>
+          </div>
         </div>
       </div>
     </div>
@@ -263,7 +300,7 @@ const registerSocketEvent = () => {
   max-width: 1600px;
   margin: 0 auto;
   padding: 0 20px;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto 1fr 120px;
 }
 
 .chat-header {
@@ -385,8 +422,8 @@ const registerSocketEvent = () => {
   background: #ffffff;
   border: 2px solid #e2e8f0;
   border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 20px;
+  padding: 20px;
+  margin: 20px 0 40px 0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
@@ -443,6 +480,9 @@ const registerSocketEvent = () => {
   overflow-y: auto;
   padding-right: 8px;
   min-height: 0;
+  scroll-behavior: smooth;
+  /* 新しいメッセージが追加されたときに自動的に下にスクロール */
+  overflow-anchor: none;
 }
 
 .chat-messages::-webkit-scrollbar {
@@ -474,26 +514,120 @@ const registerSocketEvent = () => {
 
 .message-item {
   padding: 8px 0;
-  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.message-item:last-child {
-  border-bottom: none;
-}
-
+/* システムメッセージ（入退室など）は中央配置 */
 .system-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(100, 116, 139, 0.1);
+  border-radius: 20px;
+  margin: 4px auto;
+  max-width: 300px;
+}
+
+.system-message .message-text {
   color: #64748b;
   font-style: italic;
   font-size: 14px;
+  text-align: center;
 }
 
-.user-message {
+.system-message .message-timestamp {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 1;
+  background: rgba(100, 116, 139, 0.15);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+/* メッセージバブル */
+.message-bubble {
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  margin: 4px 0;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
+
+/* 自分のメッセージ（右配置） */
+.own-message {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  border-bottom-right-radius: 6px;
+  margin-left: auto;
+}
+
+.own-message .message-content {
+  color: white;
+}
+
+.own-message .message-timestamp {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* 他のユーザーのメッセージ（左配置） */
+.other-message {
+  align-self: flex-start;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  color: #334155;
+  border-bottom-left-radius: 6px;
+  margin-right: auto;
+}
+
+.other-message .message-content {
   color: #334155;
 }
 
-.memo-message {
-  color: #059669;
-  font-style: italic;
+.other-message .message-timestamp {
+  color: #64748b;
+  background: rgba(100, 116, 139, 0.1);
+}
+
+/* メッセージ内容のレイアウト */
+.message-content {
+  margin-bottom: 6px;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+.message-timestamp {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 8px;
+  text-align: right;
+  opacity: 1;
+}
+
+/* アニメーション */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* メッセージバブルのホバー効果 */
+.message-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .util-ml-8px {
