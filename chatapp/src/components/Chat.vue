@@ -1,9 +1,8 @@
 <script setup>
-import { inject, ref, reactive, computed, onMounted, nextTick } from "vue"
+import { inject, ref,  onMounted, onBeforeUnmount, nextTick } from "vue"
 import { useRouter } from "vue-router"
 import socketManager from '../socketManager.js'
 import FB from './FB.vue'
-import ChatContent from './Button/Chat_Content.vue'
 import HowUse from './Button/How-Use.vue'
 
 // #region global state
@@ -38,21 +37,6 @@ const scrollToBottom = () => {
 
 onMounted(() => {
   registerSocketEvent()
-  
-  // 入室メッセージをサーバーに送信
-  socket.emit("enterEvent", {
-    type: 'system',
-    userName: userName.value
-  })
-  
-  // ダミーデータを直接追加
-  fbList.push({
-    title: 'チャットアプリプロジェクト',
-    githubUrl: 'https://github.com/example/chat-app',
-    thinkingProcess: 'Vue.jsとSocket.ioを使ってリアルタイムチャットアプリを作成しました。ユーザビリティとレスポンシブデザインを重視し、直感的なインターフェースを心がけました。コンポーネント設計により再利用性を高め、メンテナンス性を向上させています。',
-    userName: '田中さん',
-    timestamp: new Date()
-  })
 })
 // #endregion
 
@@ -165,6 +149,7 @@ const onReceiveReport = (data) => {
     userName: data.username + 'さん',
     timestamp: new Date(data.post_time)
   })
+  console.log("Report received:", data)
   scrollToBottom()
 }
 // #endregion
@@ -172,29 +157,19 @@ const onReceiveReport = (data) => {
 // #region local methods
 // イベント登録をまとめる
 const registerSocketEvent = () => {
-  // 入室イベントを受け取ったら実行
-  socket.on("enterEvent", (data) => {
-    onReceiveEnter(data)
-  })
-
-  // 退室イベントを受け取ったら実行
-  socket.on("exitEvent", (data) => {
-    onReceiveExit(data)
-  })
-
-  // メッセージイベントを受け取ったら実行
-  socket.on("publishEvent", (data) => {
-    onReceivePublish(data)
-    console.log(data)
-  })
-
-  // レポートイベントを受け取ったら実行
-  socket.on("reportSubmit", (data) => {
-    onReceiveReport(data)
-    console.log("Report received:", data)
-    // 必要に応じてチャット履歴やFBリストに追加する処理をここに記述
-  })
+  socket.on("enterEvent", onReceiveEnter)
+  socket.on("exitEvent", onReceiveExit)
+  socket.on("publishEvent", onReceivePublish)
+  socket.on("reportSubmit", onReceiveReport)
 }
+
+onBeforeUnmount(() => {
+  // コンポーネントがアンマウントされる際にソケットのリスナーを解除
+  socket.off("enterEvent", onReceiveEnter)
+  socket.off("exitEvent", onReceiveExit)
+  socket.off("publishEvent", onReceivePublish)
+  socket.off("reportSubmit", onReceiveReport)
+})
 // #endregion
 </script>
 
