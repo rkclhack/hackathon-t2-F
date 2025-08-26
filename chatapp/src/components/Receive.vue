@@ -89,8 +89,15 @@ const formatTime = (date) => {
     <h1 class="text-h3 font-weight-medium">フィードバック受信</h1>
     <div class="mt-10">
       <p>レポートID：{{ reportId }}</p>
-      <!-- <p>投稿者：{{ reportData?.username }}さん</p> -->
-      <p>ログインユーザー：{{ userName }}さん</p>
+      <!-- <p>投稿者：{{ reportData.userName }}さん</p> -->
+      <!-- ログインユーザー情報 -->
+      <div class="user-info-container">
+        <div class="user-info">
+          <span class="user-icon">👤</span>
+          <span class="user-label">ログインユーザー:</span>
+          <span class="user-name">{{ userName }}さん</span>
+        </div>
+      </div>
       
       <!-- レポート内容表示 -->
       <!-- <div class="report-content mt-5" v-if="reportData">
@@ -263,6 +270,37 @@ const formatTime = (date) => {
 .button-normal:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+.user-info-container {
+  margin: 15px 0;
+}
+
+.user-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
+.user-icon {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+.user-label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.user-name {
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .report-content {

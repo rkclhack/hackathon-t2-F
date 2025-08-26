@@ -1,9 +1,8 @@
 <script setup>
-import { inject, ref, reactive, computed, onMounted } from "vue"
+import { inject, ref, reactive, computed, onMounted, nextTick } from "vue"
 import { useRouter } from "vue-router"
 import socketManager from '../socketManager.js'
 import FB from './FB.vue'
-import FBData from './FBData.vue'
 import ChatContent from './Button/Chat_Content.vue'
 import HowUse from './Button/How-Use.vue'
 
@@ -22,48 +21,37 @@ const chatList = inject("chatList")
 const addChatMessage = inject("addChatMessage")
 const clearChatHistory = inject("clearChatHistory")
 const fbList = reactive([])
+const chatMessages = ref(null)
+// #endregion
+
+// #region helper functions
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (chatMessages.value) {
+      chatMessages.value.scrollTop = chatMessages.value.scrollHeight
+    }
+  })
+}
 // #endregion
 
 // #region lifecycle
-// FBDataコンポーネントからダミーデータを取得
-const fbDataComponent = ref(null)
-const getDummyData = () => {
-  if (fbDataComponent.value) {
-    return fbDataComponent.value.fbData
-  }
-  // フォールバックデータ
-  return {
-    type: 'message',
-    userName: '田中さん',
-    message: 'チャットアプリのUIがとても使いやすいです！機能も充実していて素晴らしいと思います。',
-    timestamp: new Date(),
-    reactions: ['👍', '❤️'],
-    isLiked: false,
-    comments: [
-      {
-        userName: '佐藤',
-        text: '私も同感です！'
-      }
-    ]
-  }
-}
 
 onMounted(() => {
   registerSocketEvent()
+  
+  // 入室メッセージをサーバーに送信
+  socket.emit("enterEvent", {
+    type: 'system',
+    userName: userName.value
+  })
+  
   // ダミーデータを直接追加
   fbList.push({
-    type: 'message',
+    title: 'チャットアプリプロジェクト',
+    githubUrl: 'https://github.com/example/chat-app',
+    thinkingProcess: 'Vue.jsとSocket.ioを使ってリアルタイムチャットアプリを作成しました。ユーザビリティとレスポンシブデザインを重視し、直感的なインターフェースを心がけました。コンポーネント設計により再利用性を高め、メンテナンス性を向上させています。',
     userName: '田中さん',
-    message: 'チャットアプリのUIがとても使いやすいです！機能も充実していて素晴らしいと思います。',
-    timestamp: new Date(),
-    reactions: ['👍', '❤️'],
-    isLiked: false,
-    comments: [
-      {
-        userName: '佐藤',
-        text: '私も同感です！'
-      }
-    ]
+    timestamp: new Date()
   })
 })
 // #endregion
@@ -78,8 +66,9 @@ const onPublish = () => {
     message: chatContent.value,
     timestamp: new Date()
   }
-  addChatMessage(myMessage)
   
+  addChatMessage(myMessage)
+
   // サーバーに送信
   socket.emit("publishEvent", {
     type: 'message',
@@ -101,11 +90,12 @@ const onExit = () => {
 const onMemo = () => {
   if (!chatContent.value.trim()) return//もし、入力欄が空文字やスペースだけだった場合は 何もしないで終了。
   // メモの内容を表示
-  chatList.unshift({
+  chatList.push({
     type: 'memo',
     userName: userName.value + 'さんのメモ',
     message: chatContent.value
   })
+  scrollToBottom()
   // 入力欄を初期化
   chatContent.value = ""
 }
@@ -115,37 +105,45 @@ const onReport = () => {
   router.push({ name: "report" })
 }
 
-// Send画面へ遷移
-const onFeedback = () => {
-  router.push({ name: "send" })
-}
 
 // #endregion
 
 // #region socket event handler
 // サーバから受信した入室メッセージ画面上に表示する
 const onReceiveEnter = (data) => {
-    chatList.unshift({
+    chatList.push({
     type: 'system',
     userName: '',
     message: data.userName + 'さんが入室しました'
   })
+  scrollToBottom()
 }
 
 
 // サーバから受信した退室メッセージを受け取り画面上に表示する
 const onReceiveExit = (data) => {
-    chatList.unshift({
+    chatList.push({
     type: 'system',
     userName: '',
     message: data.userName + 'さんが退室しました'
   })
+  scrollToBottom()
 }
 
-// サーバから受信した投稿メッセージをFB表示用に追加
+// サーバから受信した投稿メッセージをチャット履歴とFB表示用に追加
 const onReceivePublish = (data) => {
-  // 他のユーザーからのメッセージのみFB表示に追加
+  // 自分以外のユーザーからのメッセージをチャット履歴に追加
   if (data.userName !== userName.value) {
+    // チャット履歴に追加
+    chatList.push({
+      type: 'message',
+      userName: data.userName + 'さん',
+      message: data.message,
+      timestamp: new Date()
+    })
+    scrollToBottom()
+    
+    // FB表示用にも追加
     fbList.unshift({
       type: 'message',
       userName: data.userName + 'さん',
@@ -158,26 +156,6 @@ const onReceivePublish = (data) => {
   }
 }
 
-// チャットリストを処理してChatContentコンポーネント用のデータに変換
-const processedChatList = computed(() => {
-  return chatList.map((chat, index) => {
-    if (typeof chat === 'string') {
-      // 文字列の場合はシステムメッセージとして処理
-      return {
-        userName: 'システム',
-        message: chat,
-        timestamp: new Date(),
-        id: `system-${index}`,
-        isSystemMessage: true
-      }
-    }
-    return {
-      ...chat,
-      id: chat.id || `msg-${index}`,
-      timestamp: chat.timestamp || new Date()
-    }
-  })
-})
 // #endregion
 
 // #region local methods
@@ -219,7 +197,7 @@ const registerSocketEvent = () => {
     <!-- チャットメッセージ表示エリア -->
     <div class="chat-messages-container" v-if="chatList.length !== 0">
       <h3 class="messages-title">💬 チャット履歴</h3>
-      <div class="chat-messages">
+      <div class="chat-messages" ref="chatMessages">
         <div class="message-item" v-for="(chat, i) in chatList" :key="i">
           <span v-if="chat.type === 'system'" class="system-message">
             {{ chat.message }}
@@ -243,9 +221,13 @@ const registerSocketEvent = () => {
       <h3 class="fb-title">📘 Facebook風フィードバック</h3>
       <div class="fb-messages">
         <FB 
-          v-for="(chat, i) in fbList" 
+          v-for="(item, i) in fbList" 
           :key="'fb-' + i" 
-          :chat-data="chat" 
+          :title="item.title"
+          :github-url="item.githubUrl"
+          :thinking-process="item.thinkingProcess"
+          :user-name="item.userName"
+          :timestamp="item.timestamp"
         />
       </div>
     </div>
@@ -254,8 +236,6 @@ const registerSocketEvent = () => {
       <p class="empty-message">まだフィードバックがありません。</p>
     </div>
     
-    <!-- FBDataコンポーネント（非表示） -->
-    <FBData ref="fbDataComponent" />
     
     <!-- 入力欄を最下部に配置 -->
     <div class="chat-input-container">
