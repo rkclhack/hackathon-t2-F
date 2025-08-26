@@ -20,7 +20,7 @@ const chatContent = ref("")
 const chatList = inject("chatList")
 const addChatMessage = inject("addChatMessage")
 const clearChatHistory = inject("clearChatHistory")
-const fbList = reactive([])
+const fbList = inject("fbList")
 const chatMessages = ref(null)
 // #endregion
 
