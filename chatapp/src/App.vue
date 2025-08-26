@@ -9,6 +9,9 @@ const addChatMessage = (message) => {
 const clearChatHistory = () => {
   chatList.splice(0, chatList.length)
 }
+
+const fbList = reactive([])
+
 // const reportData = reactive({
 //   task: '',
 //   url: '',
@@ -29,6 +32,7 @@ provide("userName", userName)
 provide("chatList", chatList)
 provide("addChatMessage", addChatMessage)
 provide("clearChatHistory", clearChatHistory)
+provide("fbList", fbList)
 // provide("reportData", reportData)
 // provide("feedbackData", feedbackData)
 // provide("feedbackList", feedbackList)
