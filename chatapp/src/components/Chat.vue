@@ -1,5 +1,6 @@
 <script setup>
 import { inject, ref, reactive, onMounted } from "vue"
+import { useRouter } from "vue-router"
 import socketManager from '../socketManager.js'
 
 // #region global state
@@ -7,6 +8,7 @@ const userName = inject("userName")
 // #endregion
 
 // #region local variable
+const router = useRouter()
 const socket = socketManager.getInstance()
 // #endregion
 
@@ -51,6 +53,12 @@ const onMemo = () => {
   // 入力欄を初期化
   chatContent.value = ""
 }
+
+// レポート画面へ遷移
+const onReport = () => {
+  router.push({ name: "report" })
+}
+
 // #endregion
 
 // #region socket event handler
@@ -114,6 +122,7 @@ const registerSocketEvent = () => {
       <div class="mt-5">
         <button @click="onPublish" class="button-normal">投稿</button>
         <button @click="onMemo" class="button-normal util-ml-8px">メモ</button>
+        <button @click="onReport" class="button-normal util-ml-8px">レポート</button>
       </div>
       <div class="mt-5" v-if="chatList.length !== 0">
      <li class="item mt-4" v-for="(chat, i) in chatList" :key="i">
