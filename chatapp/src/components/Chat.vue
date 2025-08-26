@@ -18,7 +18,9 @@ const socket = socketManager.getInstance()
 
 // #region reactive variable
 const chatContent = ref("")
-const chatList = reactive([])
+const chatList = inject("chatList")
+const addChatMessage = inject("addChatMessage")
+const clearChatHistory = inject("clearChatHistory")
 const fbList = reactive([])
 // #endregion
 
@@ -76,7 +78,7 @@ const onPublish = () => {
     message: chatContent.value,
     timestamp: new Date()
   }
-  chatList.unshift(myMessage)
+  addChatMessage(myMessage)
   
   // サーバーに送信
   socket.emit("publishEvent", {
