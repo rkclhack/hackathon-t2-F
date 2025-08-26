@@ -34,6 +34,7 @@ const router = createRouter({
       //     next({ name:"login" })
       //   }
       // },
+    },{
       path: "/report/",
       name: "report",
       component: Report
