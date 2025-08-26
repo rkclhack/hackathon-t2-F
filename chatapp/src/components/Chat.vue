@@ -130,11 +130,11 @@ const onReceiveExit = (data) => {
   scrollToBottom()
 }
 
-// サーバから受信した投稿メッセージをチャット履歴とFB表示用に追加
+// サーバから受信した投稿メッセージをチャット履歴のみに追加
 const onReceivePublish = (data) => {
   // 自分以外のユーザーからのメッセージをチャット履歴に追加
   if (data.userName !== userName.value) {
-    // チャット履歴に追加
+    // チャット履歴にのみ追加（FB表示には追加しない）
     chatList.push({
       type: 'message',
       userName: data.userName + 'さん',
@@ -142,17 +142,6 @@ const onReceivePublish = (data) => {
       timestamp: new Date()
     })
     scrollToBottom()
-    
-    // FB表示用にも追加
-    fbList.unshift({
-      type: 'message',
-      userName: data.userName + 'さん',
-      message: data.message,
-      timestamp: new Date(),
-      reactions: [],
-      isLiked: false,
-      comments: []
-    })
   }
 }
 
