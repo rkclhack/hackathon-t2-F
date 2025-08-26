@@ -63,8 +63,9 @@ export default {
         username.value         // username
       )
 
-      // コンソールにデータを出力（実際の処理では API に送信など）
-      console.log('レポートが投稿されました:', report)
+      // Socket.IOでサーバーにデータを送信
+      socket.emit('reportSubmit', report)
+      console.log('レポートをサーバーに送信しました:', report)
 
       // 成功メッセージを表示
       alert('レポートが正常に投稿されました！')

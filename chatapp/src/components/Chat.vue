@@ -1,9 +1,8 @@
 <script setup>
-import { inject, ref, reactive, computed, onMounted, nextTick } from "vue"
+import { inject, ref,  onMounted, onBeforeUnmount, nextTick } from "vue"
 import { useRouter } from "vue-router"
 import socketManager from '../socketManager.js'
 import FB from './FB.vue'
-import ChatContent from './Button/Chat_Content.vue'
 import HowUse from './Button/How-Use.vue'
 
 // #region global state
@@ -19,7 +18,7 @@ const socket = socketManager.getInstance()
 const chatContent = ref("")
 const chatList = inject("chatList")
 const clearChatHistory = inject("clearChatHistory")
-const fbList = reactive([])
+const fbList = inject("fbList")
 const chatMessages = ref(null)
 // #endregion
 
@@ -76,24 +75,7 @@ const isOwnMessage = (chat) => {
 
 onMounted(() => {
   registerSocketEvent()
-  
-  // 入室メッセージをサーバーに送信
-  socket.emit("enterEvent", {
-    type: 'system',
-    userName: userName.value
-  })
-  
-  // ダミーデータを直接追加
-  fbList.push({
-    title: 'チャットアプリプロジェクト',
-    githubUrl: 'https://github.com/example/chat-app',
-    thinkingProcess: 'Vue.jsとSocket.ioを使ってリアルタイムチャットアプリを作成しました。ユーザビリティとレスポンシブデザインを重視し、直感的なインターフェースを心がけました。コンポーネント設計により再利用性を高め、メンテナンス性を向上させています。',
-    userName: '田中さん',
-    timestamp: new Date()
-  })
-  
-  // 初期読み込み時も最下部にスクロール
-  scrollToBottom()
+
 })
 // #endregion
 
@@ -190,27 +172,36 @@ const onReceivePublish = (data) => {
   }
 }
 
+const onReceiveReport = (data) => {
+  // 受信したレポートデータをFBリストに追加
+  fbList.push({
+    title: data.task,
+    githubUrl: data.url,
+    thinkingProcess: data.process,
+    userName: data.username + 'さん',
+    timestamp: new Date(data.post_time)
+  })
+  console.log("Report received:", data)
+  scrollToBottom()
+}
 // #endregion
 
 // #region local methods
 // イベント登録をまとめる
 const registerSocketEvent = () => {
-  // 入室イベントを受け取ったら実行
-  socket.on("enterEvent", (data) => {
-    onReceiveEnter(data)
-  })
-
-  // 退室イベントを受け取ったら実行
-  socket.on("exitEvent", (data) => {
-    onReceiveExit(data)
-  })
-
-  // 投稿イベントを受け取ったら実行
-  socket.on("publishEvent", (data) => {
-    onReceivePublish(data)
-    console.log(data)
-  })
+  socket.on("enterEvent", onReceiveEnter)
+  socket.on("exitEvent", onReceiveExit)
+  socket.on("publishEvent", onReceivePublish)
+  socket.on("reportSubmit", onReceiveReport)
 }
+
+onBeforeUnmount(() => {
+  // コンポーネントがアンマウントされる際にソケットのリスナーを解除
+  socket.off("enterEvent", onReceiveEnter)
+  socket.off("exitEvent", onReceiveExit)
+  socket.off("publishEvent", onReceivePublish)
+  socket.off("reportSubmit", onReceiveReport)
+})
 // #endregion
 </script>
 
