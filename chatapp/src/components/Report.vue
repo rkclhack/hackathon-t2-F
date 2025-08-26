@@ -1,7 +1,7 @@
 <script>
 import { ref, onMounted, inject } from 'vue'
 import router from '../router'
-  import socketManager from '../socketManager.js'
+import socketManager from '../socketManager.js'
 
 // Reportクラスの定義
 class Report {

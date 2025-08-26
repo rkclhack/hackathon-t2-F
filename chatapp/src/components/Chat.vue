@@ -179,7 +179,8 @@ const onReceiveReport = (data) => {
     githubUrl: data.url,
     thinkingProcess: data.process,
     userName: data.username + 'さん',
-    timestamp: new Date(data.post_time)
+    timestamp: new Date(data.post_time),
+    ID: data.ID
   })
   console.log("Report received:", data)
   scrollToBottom()
@@ -263,6 +264,7 @@ onBeforeUnmount(() => {
           :thinking-process="item.thinkingProcess"
           :user-name="item.userName"
           :timestamp="item.timestamp"
+          :report-id="item.ID"
         />
       </div>
     </div>

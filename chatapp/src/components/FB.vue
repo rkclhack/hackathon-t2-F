@@ -22,6 +22,10 @@ const props = defineProps({
   timestamp: {
     type: Date,
     default: () => new Date()
+  },
+  reportId: {
+    type: String,
+    required: true
   }
 })
 
@@ -42,7 +46,7 @@ const onFeedback = () => {
 }
 
 const onViewFeedback = () => {
-  router.push({ name: 'receive', params: { id: 1 } })
+  router.push({ name: 'receive', params: { id: props.reportId } })
 }
 </script>
 
