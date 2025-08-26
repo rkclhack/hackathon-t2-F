@@ -18,7 +18,7 @@ const router = createRouter({
       name: "chat",
       component: Chat,
       beforeEnter: (to, from, next) => {
-        if (from.name === "login" || from.name == "report"|| from.name === "send") {
+        if (from.name === "login" || from.name == "report" || from.name == "send" || from.name == "receive") {
           next()
         } else {
           next({ name: "login" })
@@ -28,19 +28,19 @@ const router = createRouter({
     { // Sendのルート設定を独立したオブジェクトとして追加
       path: "/send/",
       name: "send",
-      component: Send
+      component: Send,
     },
     {
       path: "/chat/receive/:id",
       name: "receive",
-      component: Receive,
-      beforeEnter: (to, from, next) => {
-        if (from.name === "login" || from.name === "chat") {
-          next()
-        } else {
-          next({ name: "login" })
-        }
-      },
+      component: Receive
+      // beforeEnter: (to, from, next) => {
+      //   if (from.name === "login" || from.name === "chat") {
+      //     next()
+      //   } else {
+      //     next({ name: "login" })
+      //   }
+      // },
     },
     {
       path: "/report/",
