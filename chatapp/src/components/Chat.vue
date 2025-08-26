@@ -1,6 +1,8 @@
 <script setup>
-import { inject, ref, reactive, onMounted } from "vue"
+import { inject, ref, reactive, computed, onMounted } from "vue"
 import socketManager from '../socketManager.js'
+import ChatContent from './Button/Chat_Content.vue'
+import HowUse from './Button/How-Use.vue'
 
 // #region global state
 const userName = inject("userName")
@@ -58,8 +60,34 @@ const onReceiveExit = (data) => {
 
 // サーバから受信した投稿メッセージを画面上に表示する
 const onReceivePublish = (data) => {
-  chatList.push({ userName: data.userName, message: data.message })
+  chatList.push({ 
+    userName: data.userName, 
+    message: data.message,
+    timestamp: new Date(),
+    id: Math.random().toString(36).substr(2, 9)
+  })
 }
+
+// チャットリストを処理してChatContentコンポーネント用のデータに変換
+const processedChatList = computed(() => {
+  return chatList.map((chat, index) => {
+    if (typeof chat === 'string') {
+      // 文字列の場合はシステムメッセージとして処理
+      return {
+        userName: 'システム',
+        message: chat,
+        timestamp: new Date(),
+        id: `system-${index}`,
+        isSystemMessage: true
+      }
+    }
+    return {
+      ...chat,
+      id: chat.id || `msg-${index}`,
+      timestamp: chat.timestamp || new Date()
+    }
+  })
+})
 // #endregion
 
 // #region local methods
@@ -85,38 +113,215 @@ const registerSocketEvent = () => {
 </script>
 
 <template>
-  <div class="mx-auto my-5 px-4">
-    <h1 class="text-h3 font-weight-medium">Vue.js Chat チャットルーム</h1>
-    <div class="mt-10">
-      <p>ログインユーザ：{{ userName }}さん</p>
-      <textarea v-model="chatContent" variant="outlined" placeholder="投稿文を入力してください" rows="4" class="area"></textarea>
-      <div class="mt-5">
-        <button @click="onPublish" class="button-normal">投稿</button>
-        <button class="button-normal util-ml-8px">メモ</button>
-      </div>
-      <div class="mt-5" v-if="chatList.length !== 0">
-     <li class="item mt-4" v-for="(chat, i) in chatList" :key="i">
-  <strong>{{ userName }}:</strong> {{ chat.message }}
-     </li>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h1 class="text-h3 font-weight-medium">Vue.js FB特化 チャットルーム</h1>
+      <div class="header-actions">
+        <HowUse />
+        <router-link to="/" class="link">
+          <button type="button" class="button-normal button-exit" @click="onExit">退室する</button>
+        </router-link>
       </div>
     </div>
-    <router-link to="/" class="link">
-      <button type="button" class="button-normal button-exit" @click="onExit">退室する</button>
-    </router-link>
+    
+    <div class="user-info">ログインユーザ：{{ userName }}さん</div>
+    
+    <!-- チャットメッセージ表示エリア -->
+    <div class="chat-messages-container" v-if="chatList.length !== 0">
+      <h3 class="messages-title">💬 チャット履歴</h3>
+      <div class="chat-messages">
+        <ChatContent
+          v-for="(chat, i) in processedChatList"
+          :key="i"
+          :userName="chat.userName || userName"
+          :message="chat.message || chat"
+          :timestamp="chat.timestamp || new Date()"
+          :isOwnMessage="chat.userName === userName"
+          :messageId="chat.id || `msg-${i}`"
+          :showFeedbackButtons="true"
+        />
+      </div>
+    </div>
+    
+    <div class="chat-messages-container empty-state" v-else>
+      <p class="empty-message">まだメッセージがありません。最初のメッセージを送信してみましょう！</p>
+    </div>
+    
+    <!-- 入力欄を最下部に配置 -->
+    <div class="chat-input-container">
+      <textarea 
+        v-model="chatContent" 
+        placeholder="投稿文を入力してください" 
+        rows="3" 
+        class="chat-input"
+        @keydown.enter.prevent="onPublish"
+      ></textarea>
+      <div class="input-buttons">
+        <button @click="onPublish" class="button-normal">投稿</button>
+        <button @click="onMemo" class="button-normal util-ml-8px">メモ</button>
+      </div>
+    </div>
+    
+    <!-- 従来の表示も残す（互換性のため） -->
+    <div class="legacy-chat mt-5" v-if="chatList.length !== 0" style="display: none;">
+      <li class="item mt-4" v-for="(chat, i) in chatList" :key="i">
+        <strong>{{ userName }}:</strong> {{ chat.message }}
+      </li>
+    </div>
   </div>
 </template>
 
 
 <style scoped>
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 2px solid #e1e5e9;
+  flex-shrink: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.user-info {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #475569;
+  margin: 16px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+}
+
+.chat-messages-container {
+  flex: 1;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-messages-container.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-message {
+  color: #64748b;
+  font-size: 18px;
+  text-align: center;
+  font-style: italic;
+}
+
+.chat-input-container {
+  flex-shrink: 0;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chat-input {
+  width: 100%;
+  border: 2px solid #e1e5e9;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin-bottom: 12px;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+}
+
+.chat-input::placeholder {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.input-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.messages-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 8px;
+  min-height: 0;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 .link {
   text-decoration: none;
 }
 
-.area {
-  width: 500px;
-  border: 1px solid #000;
-  margin-top: 8px;
-}
 
 .item {
   display: block;
@@ -126,8 +331,99 @@ const registerSocketEvent = () => {
   margin-left: 8px;
 }
 
+.button-normal {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.button-normal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s;
+}
+
+.button-normal:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.4);
+  background: linear-gradient(135deg, #5b52f0 0%, #8b5cf6 100%);
+}
+
+.button-normal:hover::before {
+  left: 100%;
+}
+
+.button-normal:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 5px 15px rgba(79, 70, 229, 0.3);
+}
+
+.button-normal:nth-child(2) {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+.button-normal:nth-child(2):hover {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+}
+
 .button-exit {
-  color: #000;
-  margin-top: 8px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border: none;
+}
+
+.button-exit::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s;
+}
+
+.button-exit:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+
+.button-exit:hover::before {
+  left: 100%;
+}
+
+.button-exit:active {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
 }
 </style>
