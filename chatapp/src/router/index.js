@@ -2,8 +2,8 @@ import { createRouter, createWebHistory } from "vue-router"
 import Report from "../components/Report.vue"
 import Chat from "../components/Chat.vue"
 import Login from "../components/Login.vue"
+import Send from "../components/Send.vue"
 import Receive from "../components/Receive.vue"
-
 
 const router = createRouter({
   history: createWebHistory(),
@@ -12,18 +12,25 @@ const router = createRouter({
       path: "/",
       name: "login",
       component: Login
-    },{
+    },
+    { // Chatのルート設定
       path: "/chat/",
       name: "chat",
       component: Chat,
       beforeEnter: (to, from, next) => {
-        if(from.name === "login"){
+        if (from.name === "login") {
           next()
         } else {
-          next({ name:"login" })
+          next({ name: "login" })
         }
       },
-    },{
+    },
+    { // Sendのルート設定を独立したオブジェクトとして追加
+      path: "/send/",
+      name: "send",
+      component: Send
+    },
+    {
       path: "/chat/receive/:id",
       name: "receive",
       component: Receive,
@@ -34,6 +41,8 @@ const router = createRouter({
       //     next({ name:"login" })
       //   }
       // },
+    },
+    {
     },{
       path: "/report/",
       name: "report",
