@@ -1,6 +1,7 @@
 <script>
 import { ref, onMounted, inject } from 'vue'
 import router from '../router'
+  import socketManager from '../socketManager.js'
 
 // Reportクラスの定義
 class Report {
@@ -20,6 +21,7 @@ export default {
   },
   setup(props) {
     // injectを使用してユーザー名を取得
+    const socket = socketManager.getInstance()
     const username = inject("userName")
 
     // リアクティブな変数の定義
