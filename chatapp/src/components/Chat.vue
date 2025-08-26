@@ -156,6 +156,17 @@ const onReceivePublish = (data) => {
   }
 }
 
+const onReceiveReport = (data) => {
+  // 受信したレポートデータをFBリストに追加
+  fbList.push({
+    title: data.task,
+    githubUrl: data.url,
+    thinkingProcess: data.process,
+    userName: data.username + 'さん',
+    timestamp: new Date(data.post_time)
+  })
+  scrollToBottom()
+}
 // #endregion
 
 // #region local methods
@@ -171,10 +182,17 @@ const registerSocketEvent = () => {
     onReceiveExit(data)
   })
 
-  // 投稿イベントを受け取ったら実行
+  // メッセージイベントを受け取ったら実行
   socket.on("publishEvent", (data) => {
     onReceivePublish(data)
     console.log(data)
+  })
+
+  // レポートイベントを受け取ったら実行
+  socket.on("reportSubmit", (data) => {
+    onReceiveReport(data)
+    console.log("Report received:", data)
+    // 必要に応じてチャット履歴やFBリストに追加する処理をここに記述
   })
 }
 // #endregion
