@@ -13,4 +13,9 @@ export default (io, socket) => {
   socket.on("publishEvent", (data) => {
     io.sockets.emit("publishEvent", data)
   })
+
+  // レポート送信イベントを受信する
+  socket.on("reportSubmit", (data) => {
+    io.sockets.emit("reportSubmit", data)
+  })
 }

@@ -1,5 +1,6 @@
 <script>
 import { ref, onMounted, inject } from 'vue'
+import socketManager from '../socketManager.js'
 
 // Reportクラスの定義
 class Report {
@@ -18,6 +19,8 @@ export default {
   props: {
   },
   setup(props) {
+    const socket = socketManager.getInstance()
+
     // injectを使用してユーザー名を取得
     const username = inject("userName")
 
@@ -48,6 +51,12 @@ export default {
 
     // フォーム送信処理
     const submitReport = () => {
+      // 入力値の検証
+      if (!input_task.value.trim() || !input_url.value.trim() || !input_process.value.trim()) {
+        alert('すべての項目を入力してください．')
+        return
+      }
+
       // 投稿時間とIDを設定
       post_time.value = generatePostTime()
       ID.value = generateID()
@@ -61,6 +70,10 @@ export default {
         ID.value,              // ID
         username.value         // username
       )
+
+      // Socket.IOでサーバーにデータを送信
+      socket.value.emit('reportSubmit', report)
+      console.log('レポートをサーバーに送信しました:', report)
 
       // コンソールにデータを出力（実際の処理では API に送信など）
       console.log('レポートが投稿されました:', report)
