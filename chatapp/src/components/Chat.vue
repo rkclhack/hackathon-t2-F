@@ -3,6 +3,7 @@ import { inject, ref, reactive, computed, onMounted } from "vue"
 import { useRouter } from "vue-router"
 import socketManager from '../socketManager.js'
 import FB from './FB.vue'
+import FBData from './FBData.vue'
 import ChatContent from './Button/Chat_Content.vue'
 import HowUse from './Button/How-Use.vue'
 
@@ -22,9 +23,32 @@ const fbList = reactive([])
 // #endregion
 
 // #region lifecycle
+// FBDataコンポーネントからダミーデータを取得
+const fbDataComponent = ref(null)
+const getDummyData = () => {
+  if (fbDataComponent.value) {
+    return fbDataComponent.value.fbData
+  }
+  // フォールバックデータ
+  return {
+    type: 'message',
+    userName: '田中さん',
+    message: 'チャットアプリのUIがとても使いやすいです！機能も充実していて素晴らしいと思います。',
+    timestamp: new Date(),
+    reactions: ['👍', '❤️'],
+    isLiked: false,
+    comments: [
+      {
+        userName: '佐藤',
+        text: '私も同感です！'
+      }
+    ]
+  }
+}
+
 onMounted(() => {
   registerSocketEvent()
-  // ダミーデータを追加
+  // ダミーデータを直接追加
   fbList.push({
     type: 'message',
     userName: '田中さん',
@@ -227,6 +251,9 @@ const registerSocketEvent = () => {
     <div class="fb-display-container empty-state" v-else>
       <p class="empty-message">まだフィードバックがありません。</p>
     </div>
+    
+    <!-- FBDataコンポーネント（非表示） -->
+    <FBData ref="fbDataComponent" />
     
     <!-- 入力欄を最下部に配置 -->
     <div class="chat-input-container">
