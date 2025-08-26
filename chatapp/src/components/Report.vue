@@ -83,6 +83,9 @@ export default {
 
       // フォームをリセット（オプション）
       // resetForm()
+
+      // 画面遷移（チャット画面へ）
+      router.push({ name: "chat" })
     }
 
     // フォームリセット関数
