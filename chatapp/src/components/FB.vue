@@ -34,7 +34,7 @@ const onFeedback = () => {
 }
 
 const onViewFeedback = () => {
-  console.log('FB見るボタンが押されました')
+  router.push({ name: 'receive', params: { id: 1 } })
 }
 
 const submitComment = () => {
