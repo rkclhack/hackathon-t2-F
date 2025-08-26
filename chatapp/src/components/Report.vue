@@ -69,11 +69,11 @@ export default {
         input_process.value,   // process
         post_time.value,       // post_time
         ID.value,              // ID
-        username.value         // username
+        username.value         // usernameS
       )
 
       // Socket.IOでサーバーにデータを送信
-      socket.value.emit('reportSubmit', report)
+      socket.emit('reportSubmit', report)
       console.log('レポートをサーバーに送信しました:', report)
 
       // コンソールにデータを出力（実際の処理では API に送信など）
