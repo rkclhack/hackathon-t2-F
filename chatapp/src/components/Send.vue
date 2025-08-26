@@ -1,6 +1,6 @@
 <script setup>
 import { ref, inject } from "vue";
-import { useRouter } from "vue-router"; 
+import { useRouter } from "vue-router";
 import socketManager from '../socketManager.js';
 
 // 親から投稿データを受け取る
@@ -14,7 +14,7 @@ const props = defineProps({
 const userName = inject("userName")
 
 const socket = socketManager.getInstance();
-const router = useRouter(); // ★ここが追加されました
+const router = useRouter(); 
 const fb_eva = ref(""); // 評価を保持
 const fb_comment = ref(""); // コメントを保持
 
