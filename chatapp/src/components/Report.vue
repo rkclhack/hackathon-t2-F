@@ -81,13 +81,10 @@ export default {
 
       // 成功メッセージを表示
       alert('レポートが正常に投稿されました！')
-      router.push("")
+      router.push("/chat")
 
       // フォームをリセット（オプション）
       // resetForm()
-
-      // 画面遷移（チャット画面へ）
-      router.push({ name: "chat" })
     }
 
     // フォームリセット関数
