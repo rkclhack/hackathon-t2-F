@@ -30,10 +30,6 @@ const loadFeedback = async () => {
   try {
     loading.value = true
     
-    // 実際のAPIコール（現在はサンプルデータを使用）
-    // const response = await fetch(`https://rks-intern.com:10079/api/reports/${reportId.value}/feedback`);
-    // const data = await response.json();
-    
     // サンプルフィードバックデータを使用
     const sampleFeedbacks = [
       {
@@ -104,7 +100,7 @@ const formatTime = (date) => {
       </div>
       
       <!-- レポート内容表示 -->
-      <!-- <div class="report-content mt-5" v-if="reportData.report">
+      <!-- <div class="report-content mt-5" v-if="reportData">
         <h3>レポート内容</h3>
         <div class="report-item">
           <strong>タスク:</strong> {{ reportData.task }}
@@ -117,7 +113,13 @@ const formatTime = (date) => {
           <strong>プロセス:</strong> {{ reportData.process }}
         </div>
         <div class="report-item" v-if="reportData.post_time">
-          <strong>投稿時間:</strong> {{ formatTime(reportData.post_time) }}
+          <strong>投稿時間:</strong> {{ formatTime(new Date(reportData.post_time)) }}
+        </div>
+        <div class="report-item">
+          <strong>ID:</strong> {{ reportData.ID }}
+        </div>
+        <div class="report-item">
+          <strong>投稿者:</strong> {{ reportData.username }}さん
         </div>
       </div> -->
       
