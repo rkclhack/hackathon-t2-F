@@ -28,17 +28,17 @@ const router = createRouter({
     { // Sendのルート設定を独立したオブジェクトとして追加
       path: "/send/",
       name: "send",
-      component: Send
+      component: Send,
     },
     {
       path: "/chat/receive/:id",
       name: "receive",
-      component: Receive,
+      component: Receive
       // beforeEnter: (to, from, next) => {
-      //   if(from.name === "login" || from.name === "chat"){
+      //   if (from.name === "login" || from.name === "chat") {
       //     next()
       //   } else {
-      //     next({ name:"login" })
+      //     next({ name: "login" })
       //   }
       // },
     },
