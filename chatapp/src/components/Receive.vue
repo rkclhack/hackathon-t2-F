@@ -88,11 +88,48 @@ const formatTime = (date) => {
 </script>
 
 <template>
-  <div class="receive-container">
-    <!-- ヘッダー -->
-    <div class="chat-header">
-      <h1 class="text-h3 font-weight-medium">📨 フィードバック受信</h1>
-      <div class="header-actions">
+  <div class="mx-auto my-5 px-4">
+    <h1 class="text-h3 font-weight-medium">フィードバック受信</h1>
+    <div class="mt-10">
+      <p>レポートID：{{ reportId }}</p>
+      <!-- <p>投稿者：{{ reportData.userName }}さん</p> -->
+      <p>ログインユーザー：{{ userName }}さん</p>
+      
+      <!-- レポート内容表示 -->
+      <!-- <div class="report-content mt-5" v-if="reportData.report">
+        <h3>レポート内容</h3>
+        <div class="report-item">
+          <strong>タスク:</strong> {{ reportData.task }}
+        </div>
+        <div class="report-item">
+          <strong>URL:</strong> 
+          <a :href="reportData.url" target="_blank" class="report-link">{{ reportData.url }}</a>
+        </div>
+        <div class="report-item">
+          <strong>プロセス:</strong> {{ reportData.process }}
+        </div>
+        <div class="report-item" v-if="reportData.post_time">
+          <strong>投稿時間:</strong> {{ formatTime(reportData.post_time) }}
+        </div>
+      </div> -->
+      
+      <!-- フィードバック統計 -->
+      <div class="stats-container mt-5">
+        <div class="stat-item good">
+          <span class="stat-icon">👍</span>
+          <span class="stat-label">Good:</span>
+          <span class="stat-number">{{ fb_good_num }}</span>
+        </div>
+        <div class="stat-item bad">
+          <span class="stat-icon">👎</span>
+          <span class="stat-label">Bad:</span>
+          <span class="stat-number">{{ fb_bad_num }}</span>
+        </div>
+      </div>
+      
+      <!-- 更新ボタン -->
+      <div class="mt-5">
+
         <button @click="onRefresh" class="button-normal" :disabled="loading">
           <span v-if="loading">🔄</span>
           <span v-else>↻</span>
@@ -394,6 +431,12 @@ const formatTime = (date) => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+.report-content {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 15px;
+  background-color: #f9f9f9;
 
 .button-normal::before {
   content: '';
