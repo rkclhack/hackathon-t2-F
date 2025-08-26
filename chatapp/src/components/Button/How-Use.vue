@@ -40,7 +40,7 @@
               <ul class="instruction-list">
                 <li><strong>メッセージ投稿：</strong>テキストエリアにメッセージを入力し「投稿」ボタンをクリック</li>
                 <li><strong>個人メモ：</strong>「メモ」ボタンで自分専用のメモを作成できます</li>
-                <li><strong>リアルタイム通信：</strong>他のユーザーとリアルタイムでチャットが可能</li>
+                <!-- <li><strong>リアルタイム通信：</strong>他のユーザーとリアルタイムでチャットが可能</li> -->
                 <li><strong>退室機能：</strong>「退室する」ボタンでチャットルームから退出</li>
               </ul>
             </div>
@@ -48,25 +48,25 @@
             <div class="instruction-section">
               <h3 class="section-title">
                 <span class="step-number">2</span>
-                フィードバック機能（FB特化）
+                フィードバック機能
               </h3>
               <ul class="instruction-list">
-                <li><strong>📝 FB送信ボタン：</strong>各チャットメッセージに表示される小さなピンクのボタン</li>
+                <li><strong>🟦 FB：</strong>各チャットメッセージに表示される</li>
                 <li class="sub-feature">
                   <strong>機能詳細：</strong>
                   <ul>
-                    <li>フィードバックタイプ選択（👍ポジティブ、👎ネガティブ、💡改善提案、❓質問、🐛バグレポート）</li>
-                    <li>500文字までの詳細フィードバック入力</li>
-                    <li>5段階の星評価機能</li>
+                    <li>フィードバックタイプ選択（👍Good、👎Bad）</li>
+                    <!-- <li>500文字までの詳細フィードバック入力</li> -->
+                    <!-- <li>5段階の星評価機能</li> -->
                   </ul>
                 </li>
-                <li><strong>👀 FB閲覧ボタン：</strong>各チャットメッセージに表示される小さな青紫のボタン</li>
+                <li><strong>🟧 FB閲覧：</strong>各チャットメッセージに表示される</li>
                 <li class="sub-feature">
                   <strong>機能詳細：</strong>
                   <ul>
-                    <li>フィードバック一覧表示とフィルタリング</li>
-                    <li>統計情報表示（総数、平均評価、ポジティブ率）</li>
-                    <li>フィードバックへのいいね機能と返信機能</li>
+                    <li>フィードバック一覧表示</li>
+                    <!-- <li>統計情報表示（総数、平均評価、ポジティブ率）</li> -->
+                    <!-- <li>フィードバックへのいいね機能と返信機能</li> -->
                   </ul>
                 </li>
               </ul>
@@ -79,33 +79,33 @@
               </h3>
               <ul class="instruction-list">
                 <li><strong>アバター表示：</strong>各メッセージにユーザー名の頭文字がカラフルなアイコンで表示</li>
-                <li><strong>オンライン状態：</strong>アイコン右下の小さな丸で状態表示</li>
-                <li class="sub-feature">
-                  <strong>状態の種類：</strong>
-                  <ul>
-                    <li>🟢 緑色：オンライン（脈打つアニメーション）</li>
-                    <li>⚫ グレー：オフライン</li>
-                    <li>🟠 オレンジ：離席中</li>
-                  </ul>
-                </li>
-                <li><strong>メッセージの色分け：</strong>自分のメッセージは青系、他の人は赤系のグラデーション</li>
+                <!-- <li><strong>オンライン状態：</strong>アイコン右下の小さな丸で状態表示</li> -->
+                <!-- <li class="sub-feature"> -->
+                  <!-- <strong>状態の種類：</strong> -->
+                  <!-- <ul> -->
+                    <!-- <li>🟢 緑色：オンライン（脈打つアニメーション）</li> -->
+                    <!-- <li>⚫ グレー：オフライン</li> -->
+                    <!-- <li>🟠 オレンジ：離席中</li> -->
+                  <!-- </ul> -->
+                <!-- </li> -->
+                <!-- <li><strong>メッセージの色分け：</strong>自分のメッセージは青系、他の人は赤系のグラデーション</li> -->
                 <li><strong>投稿時間：</strong>各メッセージに自動的に時刻が表示されます</li>
               </ul>
             </div>
             
-            <div class="instruction-section">
-              <h3 class="section-title">
-                <span class="step-number">4</span>
-                画面レイアウト
-              </h3>
-              <ul class="instruction-list">
-                <li><strong>ヘッダー：</strong>「Vue.js FB特化 チャットルーム」タイトルと右上の「使い方」ボタン</li>
-                <li><strong>ユーザー情報：</strong>現在ログイン中のユーザー名が上部に表示</li>
-                <li><strong>入力エリア：</strong>モダンなデザインのテキストエリアと投稿・メモボタン</li>
-                <li><strong>チャット履歴：</strong>「💬 チャット履歴」セクションに全てのメッセージが表示</li>
-                <li><strong>スクロール機能：</strong>メッセージが多い場合は自動でスクロール可能</li>
-              </ul>
-            </div>
+            <!-- <div class="instruction-section"> -->
+              <!-- <h3 class="section-title"> -->
+                <!-- <span class="step-number">4</span> -->
+                <!-- 画面レイアウト -->
+              <!-- </h3> -->
+              <!-- <ul class="instruction-list"> -->
+                <!-- <li><strong>ヘッダー：</strong>「Vue.js FB特化 チャットルーム」タイトルと右上の「使い方」ボタン</li> -->
+                <!-- <li><strong>ユーザー情報：</strong>現在ログイン中のユーザー名が上部に表示</li> -->
+                <!-- <li><strong>入力エリア：</strong>モダンなデザインのテキストエリアと投稿・メモボタン</li> -->
+                <!-- <li><strong>チャット履歴：</strong>「💬 チャット履歴」セクションに全てのメッセージが表示</li> -->
+                <!-- <li><strong>スクロール機能：</strong>メッセージが多い場合は自動でスクロール可能</li> -->
+              <!-- </ul> -->
+            <!-- </div> -->
             
             <div class="tips-section">
               <h3 class="tips-title">💡 使い方のコツ</h3>
@@ -120,26 +120,26 @@
                   <div class="tip-title">モダンUI</div>
                   <p>グラデーションとアニメーションでスムーズな操作体験を提供</p>
                 </div>
-                <div class="tip-card">
+                <!-- <div class="tip-card">
                   <div class="tip-icon">📱</div>
                   <div class="tip-title">レスポンシブ</div>
                   <p>デスクトップ・タブレット・スマートフォンに完全対応</p>
-                </div>
-                <div class="tip-card">
+                </div> -->
+                <!-- <div class="tip-card">
                   <div class="tip-icon">📊</div>
                   <div class="tip-title">分析機能</div>
                   <p>フィードバックの統計情報で会話の傾向を把握できます</p>
-                </div>
+                </div> -->
                 <div class="tip-card">
                   <div class="tip-icon">🔄</div>
                   <div class="tip-title">リアルタイム</div>
                   <p>Socket.ioによる瞬時のメッセージ配信と更新</p>
                 </div>
-                <div class="tip-card">
+                <!-- <div class="tip-card">
                   <div class="tip-icon">🎯</div>
                   <div class="tip-title">フィルタリング</div>
                   <p>フィードバックタイプ別の表示で必要な情報を素早く確認</p>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
