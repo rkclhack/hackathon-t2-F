@@ -162,17 +162,6 @@ export default {
           投稿する
         </button>
       </form>
-
-      <!-- デバッグ用：現在の値を表示 -->
-      <div class="debug-info" v-if="showDebugInfo">
-        <h3>現在の値（デバッグ用）</h3>
-        <p><strong>ID:</strong> {{ ID }}</p>
-        <p><strong>ユーザー名:</strong> {{ username }}</p>
-        <p><strong>タスクタイトル:</strong> {{ input_task }}</p>
-        <p><strong>GitHub URL:</strong> {{ input_url }}</p>
-        <p><strong>思考プロセス:</strong> {{ input_process }}</p>
-        <p><strong>投稿時間:</strong> {{ post_time }}</p>
-      </div>
     </div>
   </div>
 </template>
