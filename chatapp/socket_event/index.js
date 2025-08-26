@@ -19,4 +19,11 @@ export default (io, socket) => {
     io.sockets.emit("reportSubmit", data)
     console.log("Report submitted:", data)
   })
+
+  // フィードバック送信イベントを受信する
+  socket.on("sendFeedbackEvent", (data) => {
+    console.log("サーバー側でsendFeedbackEventを受信:", data)
+    io.sockets.emit("sendFeedbackEvent", data)
+    console.log("全クライアントにsendFeedbackEventを送信しました")
+  })
 }

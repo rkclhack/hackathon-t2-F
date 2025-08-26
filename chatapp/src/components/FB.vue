@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({
@@ -42,7 +42,17 @@ const fbData = computed(() => {
 const router = useRouter()
 
 const onFeedback = () => {
-  router.push({ name: 'send' })
+  router.push({ 
+    name: 'send', 
+    params: { 
+      report: JSON.stringify({
+        ID: props.reportId,
+        username: props.userName,
+        task: props.title,
+        url: props.githubUrl
+      })
+    }
+  })
 }
 
 const onViewFeedback = () => {

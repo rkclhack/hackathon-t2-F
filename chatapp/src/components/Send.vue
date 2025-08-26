@@ -1,6 +1,6 @@
 <script setup>
-import { ref, inject } from "vue";
-import { useRouter } from "vue-router";
+import { ref, inject, computed } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import socketManager from '../socketManager.js';
 
 // 親から投稿データを受け取る
@@ -14,9 +14,38 @@ const props = defineProps({
 const userName = inject("userName")
 
 const socket = socketManager.getInstance();
-const router = useRouter(); 
+const router = useRouter();
+const route = useRoute();
 const fb_eva = ref(""); // 評価を保持
 const fb_comment = ref(""); // コメントを保持
+
+// Send.vue側でもsocket状態をログ出力
+console.log('Send.vue - socket ID:', socket.id)
+console.log('Send.vue - socket connected:', socket.connected)
+
+// ルートパラメータからreportデータを取得してパース
+const reportData = computed(() => {
+  console.log('Computing reportData...');
+  console.log('props.report:', props.report);
+  console.log('route.params:', route.params);
+  
+  if (props.report) {
+    console.log('Using props.report');
+    return props.report;
+  }
+  if (route.params.report) {
+    try {
+      const parsed = JSON.parse(route.params.report);
+      console.log('Parsed route.params.report:', parsed);
+      return parsed;
+    } catch (e) {
+      console.error('Failed to parse report data:', e);
+      return null;
+    }
+  }
+  console.log('No report data found');
+  return null;
+});
 
 const onSendFeedback = () => {
   if (!fb_eva.value || !fb_comment.value.trim()) {
@@ -25,7 +54,10 @@ const onSendFeedback = () => {
   }
   
   // reportオブジェクトが存在するかを確認
-  const postId = props.report ? props.report.ID : 'test-id';
+  const postId = reportData.value ? reportData.value.ID : 'test-id';
+  
+  console.log('送信するpost_id:', postId);
+  console.log('reportData:', reportData.value);
 
   // サーバーに送信するデータ
   const feedbackData = {
@@ -35,6 +67,9 @@ const onSendFeedback = () => {
     reviewer_username: userName.value
   };
 
+  console.log("送信直前 - socket connected:", socket.connected);
+  console.log("送信直前 - socket ID:", socket.id);
+  
   socket.emit("sendFeedbackEvent", feedbackData); 
 
   console.log("送信されたフィードバック:", feedbackData);
@@ -50,10 +85,10 @@ const onSendFeedback = () => {
   <div class="feedback-container">
     <h2 class="feedback-title">投稿へのフィードバック</h2>
     
-    <div class="report-preview" v-if="report">
-      <p><strong>投稿者:</strong> {{ report.username }}</p>
-      <p><strong>タスク:</strong> {{ report.task }}</p>
-      <p><strong>URL:</strong> {{ report.url }}</p>
+    <div class="report-preview" v-if="reportData">
+      <p><strong>投稿者:</strong> {{ reportData.username }}</p>
+      <p><strong>タスク:</strong> {{ reportData.task }}</p>
+      <p><strong>URL:</strong> {{ reportData.url }}</p>
     </div>
     <div v-else>
       <p>表示する投稿がありません。URLから直接アクセスしたため、データが渡されていません。</p>

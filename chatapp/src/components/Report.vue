@@ -71,7 +71,14 @@ export default {
 
       // 成功メッセージを表示
       alert('レポートが正常に投稿されました！')
-      router.push("/chat")
+      
+      // モーダルを閉じる（親ウィンドウのChat.vueに通知）
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'closeReportModal' }, '*')
+      } else {
+        // 通常のページ遷移（モーダル外での表示時）
+        router.push("/chat")
+      }
 
     }
 

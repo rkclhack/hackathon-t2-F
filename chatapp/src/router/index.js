@@ -26,7 +26,7 @@ const router = createRouter({
       // },
     },
     { // Sendのルート設定を独立したオブジェクトとして追加
-      path: "/send/",
+      path: "/send/:report?",
       name: "send",
       component: Send,
     },
