@@ -11,7 +11,7 @@ const props = defineProps({
 });
 
 // provide/injectを使ってユーザー情報を取得
-const username = inject("username"); 
+const userName = inject("userName")
 
 const socket = socketManager.getInstance();
 const router = useRouter(); // ★ここが追加されました
@@ -32,7 +32,7 @@ const onSendFeedback = () => {
     fb_eva: fb_eva.value,
     fb_comment: fb_comment.value,
     post_id: postId,
-    reviewer_username: username.value
+    reviewer_username: userName.value
   };
 
   socket.emit("sendFeedbackEvent", feedbackData); 
@@ -40,10 +40,9 @@ const onSendFeedback = () => {
   console.log("送信されたフィードバック:", feedbackData);
   
   // 送信後にChat.vueに戻る
-  router.push({ name: 'chat' }); 
-
   fb_eva.value = "";
   fb_comment.value = "";
+  router.push("/chat/");
 };
 </script>
 
@@ -72,9 +71,8 @@ const onSendFeedback = () => {
       <p class="section-label">コメント：</p>
       <textarea v-model="fb_comment" placeholder="フィードバックコメントを入力してください" class="comment-textarea"></textarea>
     </div>
-    <router-link :to="{ name: 'chat' }" class="router-link">
-      <button @click="onSendFeedback" class="send-button">送信</button>
-    </router-link>
+  
+    <button @click="onSendFeedback" class="send-button">送信</button>
 
   </div>
 </template>
