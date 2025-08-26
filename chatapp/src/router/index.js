@@ -17,13 +17,13 @@ const router = createRouter({
       path: "/chat/",
       name: "chat",
       component: Chat,
-      beforeEnter: (to, from, next) => {
-        if (from.name === "login") {
-          next()
-        } else {
-          next({ name: "login" })
-        }
-      },
+      // beforeEnter: (to, from, next) => {
+      //   if (from.name === "login") {
+      //     next()
+      //   } else {
+      //     next({ name: "login" })
+      //   }
+      // },
     },
     { // Sendのルート設定を独立したオブジェクトとして追加
       path: "/send/",
