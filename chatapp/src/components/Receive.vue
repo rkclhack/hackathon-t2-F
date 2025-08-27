@@ -14,7 +14,7 @@ const socket = socketManager.getInstance()
 // #endregion
 
 // #region reactive variable
-const feedbackList = ref([])
+const feedbackList = reactive([])
 const fb_good_num = ref(0)
 const fb_bad_num = ref(0)
 const loading = ref(false)
@@ -27,8 +27,8 @@ onMounted(() => {
   console.log('Receive.vue mounted - socket状態:', socket.connected)
   console.log('Receive.vue - socket ID:', socket.id)
   console.log('socket instance:', socket)
-  console.log('初期のfeedbackList:', feedbackList.value)
-  console.log('初期のfeedbackList.length:', feedbackList.value.length)
+  console.log('初期のfeedbackList:', feedbackList)
+  console.log('初期のfeedbackList.length:', feedbackList.length)
   
   // socketが接続されているかテスト
   socket.on('connect', () => {
@@ -45,48 +45,26 @@ onMounted(() => {
   })
   
   // 既存のリスナーを削除してから追加（重複防止）
-  socket.off('sendFeedbackEvent')
+  // socket.off('sendFeedbackEvent')
   socket.on('sendFeedbackEvent', (data) => {
-    console.log('=== INLINE LISTENER CALLED ===')
-    console.log('フィードバック受信:', data)
-    console.log('現在のレポートID:', reportId.value)
-    console.log('受信したpost_id:', data.post_id)
-    
-    // 現在のレポートIDと一致するフィードバックのみ表示
-    if (data.post_id === reportId.value) {
-      console.log('レポートIDが一致しました - フィードバックを追加')
-      const newFeedback = {
-        id: Date.now(), // 一意のIDを生成
-        fb_comment: data.fb_comment,
-        fb_eva: data.fb_eva,
-        fb_user: data.reviewer_username,
-        created_at: new Date()
-      }
-      
-      feedbackList.value.push(newFeedback)
-      calculateStats()
-      console.log('feedbackListに追加完了:', feedbackList.value)
-      console.log('feedbackList.value.length after push:', feedbackList.value.length)
-    } else {
-      console.log('レポートIDが一致しません')
-    }
+  console.log('フィードバック受信:', data)
   })
   console.log('sendFeedbackEventリスナーを追加しました')
 })
 
 onUnmounted(() => {
   // socketイベントリスナーを削除
-  socket.off('sendFeedbackEvent', onFeedbackReceived)
+  socket.off('sendFeedbackEvent')
 })
 // #endregion
 
 // #region local methods
-const loadFeedback = async () => {
+const loadFeedback = () => {
   try {
     loading.value = true
     
     // feedbackListを初期化（サンプルデータは使用しない）
-    feedbackList.value.splice(0)
+    feedbackList.splice(0)
     calculateStats()
     
   } catch (error) {
@@ -97,8 +75,8 @@ const loadFeedback = async () => {
 }
 
 const calculateStats = () => {
-  fb_good_num.value = feedbackList.value.filter(f => f.fb_eva === 'good').length
-  fb_bad_num.value = feedbackList.value.filter(f => f.fb_eva === 'bad').length
+  fb_good_num.value = feedbackList.filter(f => f.fb_eva === 'good').length
+  fb_bad_num.value = feedbackList.filter(f => f.fb_eva === 'bad').length
 }
 
 const onRefresh = () => {
@@ -130,10 +108,12 @@ const onFeedbackReceived = (data) => {
       fb_user: data.reviewer_username,
       created_at: new Date()
     }
+    console.log(newFeedback)
     
     feedbackList.push(newFeedback)
     calculateStats()
     console.log('feedbackListに追加完了:', feedbackList)
+    console.log('feedbackList.value.length after push:', feedbackList.length)
   } else {
     console.log('レポートIDが一致しません')
   }
