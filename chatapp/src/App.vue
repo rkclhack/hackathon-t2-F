@@ -11,6 +11,7 @@ const clearChatHistory = () => {
 }
 
 const fbList = reactive([])
+const feedbackList = reactive([])
 
 // const reportData = reactive({
 //   task: '',
@@ -33,6 +34,8 @@ provide("chatList", chatList)
 provide("addChatMessage", addChatMessage)
 provide("clearChatHistory", clearChatHistory)
 provide("fbList", fbList)
+provide("feedbackList", feedbackList)
+
 // provide("reportData", reportData)
 // provide("feedbackData", feedbackData)
 // provide("feedbackList", feedbackList)

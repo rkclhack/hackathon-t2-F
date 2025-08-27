@@ -19,6 +19,7 @@ const chatContent = ref("")
 const chatList = inject("chatList")
 const clearChatHistory = inject("clearChatHistory")
 const fbList = inject("fbList")
+const feedbackList = inject("feedbackList")
 const chatMessages = ref(null)
 const isFullscreenChat = ref(false)
 const isFullscreenFB = ref(false)
@@ -254,6 +255,22 @@ const onReceiveReport = (data) => {
   console.log("Report received:", data)
   scrollToBottom()
 }
+
+const onFeedbackReceived = (data) => {
+  console.log('=== onFeedbackReceived関数が呼ばれました ===')
+  // console.log('フィードバック受信:', data)
+  // console.log('現在のレポートID:', reportId.value)
+  // console.log('受信したpost_id:', data.post_id)
+
+  feedbackList.push({
+    fb_eva: data.fb_eva,
+    fb_comment: data.fb_comment,
+    post_id: data.post_id,
+    reviewer_username: data.reviewer_username
+  })
+  console.log(feedbackList);
+  console.log("Report received:", data)
+}
 // #endregion
 
 // #region local methods
@@ -263,6 +280,7 @@ const registerSocketEvent = () => {
   socket.on("exitEvent", onReceiveExit)
   socket.on("publishEvent", onReceivePublish)
   socket.on("reportSubmit", onReceiveReport)
+  socket.on("sendFeedbackEvent", onFeedbackReceived)
 }
 
 onBeforeUnmount(() => {
@@ -271,6 +289,7 @@ onBeforeUnmount(() => {
   socket.off("exitEvent", onReceiveExit)
   socket.off("publishEvent", onReceivePublish)
   socket.off("reportSubmit", onReceiveReport)
+  socket.off("sendFeedbackEvent", onFeedbackReceived)
   window.removeEventListener('resize', checkMobile)
   window.removeEventListener('message', handleMessage)
 })

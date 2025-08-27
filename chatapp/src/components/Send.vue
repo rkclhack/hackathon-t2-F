@@ -12,6 +12,7 @@ const props = defineProps({
 
 // provide/injectを使ってユーザー情報を取得
 const userName = inject("userName")
+const feedbackList = inject("feedbackList")
 
 const socket = socketManager.getInstance();
 const router = useRouter();
@@ -66,6 +67,8 @@ const onSendFeedback = () => {
     post_id: postId,
     reviewer_username: userName.value
   };
+
+  feedbackList.push(feedbackData);
 
   console.log("送信直前 - socket connected:", socket.connected);
   console.log("送信直前 - socket ID:", socket.id);

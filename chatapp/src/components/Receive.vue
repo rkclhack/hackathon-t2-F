@@ -10,51 +10,23 @@ const userName = inject("userName")
 // #region local variable
 const route = useRoute()
 const reportId = ref(route.params.id)
+console.log('Receive.vue - reportId:', reportId.value)
 const socket = socketManager.getInstance()
 // #endregion
 
 // #region reactive variable
-const feedbackList = reactive([])
+const feedbackList = inject("feedbackList")
+console.log('Receive.vue - feedbackList length:', feedbackList.length)
 const fb_good_num = ref(0)
 const fb_bad_num = ref(0)
 const loading = ref(false)
+const newFeedback = reactive([])
 // #endregion
 
 // #region lifecycle
 onMounted(() => {
   loadFeedback()
-  
-  console.log('Receive.vue mounted - socket状態:', socket.connected)
-  console.log('Receive.vue - socket ID:', socket.id)
-  console.log('socket instance:', socket)
-  console.log('初期のfeedbackList:', feedbackList)
-  console.log('初期のfeedbackList.length:', feedbackList.length)
-  
-  // socketが接続されているかテスト
-  socket.on('connect', () => {
-    console.log('Socket connected in Receive.vue')
-  })
-  
-  socket.on('disconnect', () => {
-    console.log('Socket disconnected in Receive.vue')
-  })
-  
-  // すべてのsocketイベントをキャッチ
-  socket.onAny((eventName, ...args) => {
-    console.log('Received socket event:', eventName, args)
-  })
-  
-  // 既存のリスナーを削除してから追加（重複防止）
-  // socket.off('sendFeedbackEvent')
-  socket.on('sendFeedbackEvent', (data) => {
-  console.log('フィードバック受信:', data)
-  })
-  console.log('sendFeedbackEventリスナーを追加しました')
-})
-
-onUnmounted(() => {
-  // socketイベントリスナーを削除
-  socket.off('sendFeedbackEvent')
+  processFeedback(feedbackList)
 })
 // #endregion
 
@@ -64,7 +36,7 @@ const loadFeedback = () => {
     loading.value = true
     
     // feedbackListを初期化（サンプルデータは使用しない）
-    feedbackList.splice(0)
+    // feedbackList.splice(0)
     calculateStats()
     
   } catch (error) {
@@ -92,31 +64,13 @@ const formatTime = (date) => {
   }).format(date)
 }
 
-const onFeedbackReceived = (data) => {
-  console.log('=== onFeedbackReceived関数が呼ばれました ===')
-  console.log('フィードバック受信:', data)
-  console.log('現在のレポートID:', reportId.value)
-  console.log('受信したpost_id:', data.post_id)
-  
-  // 現在のレポートIDと一致するフィードバックのみ表示
-  if (data.post_id === reportId.value) {
-    console.log('レポートIDが一致しました - フィードバックを追加')
-    const newFeedback = {
-      id: Date.now(), // 一意のIDを生成
-      fb_comment: data.fb_comment,
-      fb_eva: data.fb_eva,
-      fb_user: data.reviewer_username,
-      created_at: new Date()
-    }
-    console.log(newFeedback)
-    
-    feedbackList.push(newFeedback)
-    calculateStats()
-    console.log('feedbackListに追加完了:', feedbackList)
-    console.log('feedbackList.value.length after push:', feedbackList.length)
-  } else {
-    console.log('レポートIDが一致しません')
-  }
+// フィードバックをフィルタリングする単一の関数
+const processFeedback = (feedbackList) => {
+  // reportId.valueを参照（Vueのreactiveな値として想定）
+  // この値はVueコンポーネント内で定義されている必要があります
+  const filteredNewFeedback = feedbackList.filter(feedback => feedback.post_id === reportId.value)
+  newFeedback.push(...filteredNewFeedback)
+  console.log('フィルタリング結果:', filteredNewFeedback)
 }
 // #endregion
 </script>
@@ -199,16 +153,16 @@ const onFeedbackReceived = (data) => {
     </div>
 
     <!-- フィードバック表示エリア -->
-    <div class="feedback-display-container" v-if="feedbackList.length !== 0">
-      <h3 class="feedback-title">📋 受信したフィードバック ({{ feedbackList.length }}件)</h3>
+    <div class="feedback-display-container" v-if="newFeedback.length !== 0">
+      <h3 class="feedback-title">📋 受信したフィードバック ({{ newFeedback.length }}件)</h3>
       <div class="feedback-messages">
         <div 
-          v-for="feedback in feedbackList" 
+          v-for="feedback in newFeedback" 
           :key="feedback.id"
           class="feedback-item"
         >
           <div class="feedback-header">
-            <span class="feedback-user">{{ feedback.fb_user }}</span>
+            <span class="feedback-user">{{ feedback.reviewer_username }}さん</span>
             <span class="feedback-eva" :class="{ 'eva-good': feedback.fb_eva === 'good', 'eva-bad': feedback.fb_eva === 'bad' }">
               <span v-if="feedback.fb_eva === 'good'">👍 Good</span>
               <span v-else>👎 Bad</span>
